@@ -15,15 +15,15 @@ import Footer from './components/Footer'
 export default function App() {
   return (
     <>
-    <Hero />
+    {/* <Hero />
     <AboutUs />
     <Domains />
-    <Events />
+    <Events /> */}
     <Sponsers />
-    <OurTeam />
+    {/* <OurTeam />
     <Gallery />
     <FollowUs />
-    <Footer />
+    <Footer /> */}
     </>
   )
 }
