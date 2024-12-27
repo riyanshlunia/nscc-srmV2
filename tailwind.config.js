@@ -11,7 +11,6 @@ export default {
       },
       backgroundImage: {
         'sponsi': "url('./src/assets/Background.png')",
-        'grid': ' linear-gradient(to right, #80808012 1px, transparent 1px), linear-gradient(to bottom, #80808012 1px, transparent 1px)'
       },
     },
   },
