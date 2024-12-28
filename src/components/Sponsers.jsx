@@ -1,25 +1,11 @@
 import React from 'react';
-import FlipCard from './utils/FlipCard';  // Assuming Card component is saved in the same directory
-
-// const Front = ({ children }) => (
-//   <div style={{ padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-//     {children}
-//     Hello
-//   </div>
-// );
-
-// const Back = ({ children }) => (
-//   <div style={{ padding: '20px', backgroundColor: '#ccc', borderRadius: '8px' }}>
-//     {children}
-//     Bye
-//   </div>
-// );
+import FlipCard from './utils/FlipCard'; 
 
 export default function Sponsers() {
     return(
         <div className="h-full bg-center bg-cover sponsi-container">
             <div className="Sponser  font-helvetica-neue flex justify-between">
-                <p className="Sponser-Title py-1 px-5">
+                <p className="Sponser-Title py-10 px-5">
                     Our Sponsers.
                 </p>
                 <p className="Sponsi-Text px-5 text-gray-300 w-1/4">

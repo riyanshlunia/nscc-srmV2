@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 
-
 .flip-card {
     background-color: transparent;
     width: 25%;
@@ -57,7 +56,6 @@
   .Sponser{
     height: 25vh;
     color:rgb(45, 65, 112);
-    opacity: 90%;
   }
 
   .Sponser-Title{
@@ -78,15 +76,16 @@
 }
 
 .sponsi-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image:
-        linear-gradient(to right, transparent, transparent 24.95vw, rgba(255, 255, 255, 0.1) 24.95vw, rgba(255, 255, 255, 0.1) 25vw, transparent 25vw, transparent 49.95vw, rgba(255, 255, 255, 0.1) 49.95vw, rgba(255, 255, 255, 0.1) 50vw, transparent 50vw, transparent 74.95vw, rgba(255, 255, 255, 0.1) 74.95vw, rgba(255, 255, 255, 0.1) 75vw, transparent 75vw),
-        linear-gradient(to bottom, transparent, transparent 24.95vh, rgba(255, 255, 255, 0.1) 24.95vh, rgba(255, 255, 255, 0.1) 25vh, transparent 25vh, transparent 49.95vh, rgba(255, 255, 255, 0.1) 49.95vh, rgba(255, 255, 255, 0.1) 50vh, transparent 50vh, transparent 74.95vh, rgba(255, 255, 255, 0.1) 74.95vh, rgba(255, 255, 255, 0.1) 75vh, transparent 75vh);
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+      linear-gradient(to right, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 25.05%, transparent 25.05%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 50.05%, transparent 50.05%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 75.05%, transparent 75.05%),
+      linear-gradient(to bottom, transparent, transparent 24.975%, rgba(255, 255, 255, 0.1) 24.975%, rgba(255, 255, 255, 0.1) 25.025%, transparent 25.025%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 50.05%, transparent 50.05%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 75.05%, transparent 75.05%);
 }
+
 
   
