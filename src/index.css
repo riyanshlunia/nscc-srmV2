@@ -8,7 +8,6 @@
     width: 25%;
     height: 25vh;
     perspective: 1000px;
-    font-family: sans-serif;
     padding:0.5rem;
   }
   
@@ -68,23 +67,45 @@
 
   .sponsi-container {
     width: 100%;
-    height: 100vh;
     background-image: url('./assets/Background.png');
     background-size: cover;
     background-position: center;
     position: relative;
 }
 
-.sponsi-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image:
-      linear-gradient(to right, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 25.05%, transparent 25.05%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 50.05%, transparent 50.05%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 75.05%, transparent 75.05%),
-      linear-gradient(to bottom, transparent, transparent 24.975%, rgba(255, 255, 255, 0.1) 24.975%, rgba(255, 255, 255, 0.1) 25.025%, transparent 25.025%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 50.05%, transparent 50.05%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 75.05%, transparent 75.05%);
+@media (min-width:720px){
+  .sponsi-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(to right, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 25.05%, transparent 25.05%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 50.05%, transparent 50.05%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 75.05%, transparent 75.05%),
+        linear-gradient(to bottom, transparent, transparent 24.975%, rgba(255, 255, 255, 0.1) 24.975%, rgba(255, 255, 255, 0.1) 25.025%, transparent 25.025%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 50.05%, transparent 50.05%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 75.05%, transparent 75.05%);
+  }
+}
+
+
+
+@media (max-width:720px) {
+  .sponsi-container{
+    background-image: url('./assets/Background_mobile.png');
+  }
+  .Sponser-Title{
+    font-size: 2.5rem;
+    color:rgb(142, 175, 209);
+  }
+  .Sponser{
+    height: 20vh;
+  }
+
+  .flip-card {
+    width: 93%;
+    height: 15vh;
+    margin-bottom: 0.1rem;
+  }
 }
 
 
