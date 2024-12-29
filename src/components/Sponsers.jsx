@@ -8,7 +8,7 @@ export default function Sponsers() {
                 <p className="Sponser-Title flex justify-center items-center pt-5 lg:py-10 lg:px-5">
                     Our Sponsers.
                 </p>
-                <p className="Sponsi-Text text-sm text-center lg:text-left lg:mt-10 px-6 lg:px-5 text-gray-300 lg:w-1/4">
+                <p className="Sponsi-Text text-sm text-left lg:mt-10 px-9 lg:px-5 text-gray-300 lg:w-1/4">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt 
                     ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitati 
                 </p>
