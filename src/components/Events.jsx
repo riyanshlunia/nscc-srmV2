@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 
 const eventData = [
   [
@@ -61,82 +62,112 @@ const EventPage = ({ currentPage, setCurrentPage, handleBackToLiveEvents }) => {
   };
 
   return (
-    <section className="min-h-screen bg-gray-900 text-white flex flex-col items-center pt-36 pb-8">
-      
-      <button
+    <section className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-900 to-black text-white flex flex-col items-center pt-36 pb-8">
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
         className="absolute top-8 left-8 px-4 py-2 bg-teal-500 rounded-full text-gray-900 font-medium"
         onClick={handleBackToLiveEvents}
       >
         Back
-      </button>
+      </motion.button>
 
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-2 lg:gap-32 mt-8 px-4 sm:px-8 lg:px-16">
+      <motion.div
+        className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-2 lg:gap-32 mt-8 px-4 sm:px-8 lg:px-16"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
         {eventData[currentPage].map((event, index) => (
-          <div
+          <motion.div
             key={event.id}
             className={`relative flex flex-col items-center bg-gray-800 rounded-3xl shadow-lg border p-8 sm:p-11 lg:p-10 mx-1 transition-all ${
               selectedEvent === event.id ? "border-teal-500" : "border-gray-700"
             }`}
             style={{
-              width: "100%", 
+              width: "100%",
               maxWidth: "900px",
-              height: "600px", 
-              aspectRatio: "1", 
+              height: "600px",
+              aspectRatio: "1",
             }}
+            whileHover={{ scale: 1.05 }}
             onClick={() => handleEventClick(event.id)}
           >
-            
             <div className="w-full h-full bg-gray-300 rounded-2xl relative">
-              
               {index === 1 && currentPage < eventData.length - 1 && (
-                <div
+                <motion.div
                   className="absolute top-4 right-4 flex items-center justify-center w-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-teal-500 rounded-full text-white font-medium cursor-pointer hover:bg-teal-400 transition"
+                  whileHover={{ scale: 1.2 }}
                   onClick={handleNextPage}
                 >
                   <span className="lg:text-2xl text-xl">&#8594;</span>
-                </div>
+                </motion.div>
               )}
             </div>
 
-           
-            <div className="w-full h-[1px] bg-gray-700 my-10"></div> 
+            <div className="w-full h-[1px] bg-gray-700 my-10"></div>
 
-            
-            <div className="flex flex-wrap justify-center gap-5 w-full"> 
-              
-              <button className="px-12 py-3 bg-gray-300 text-black rounded-full text-sm font-medium shadow hover:bg-gray-400 transition">
+            <motion.div
+              className="flex flex-wrap justify-center gap-5 w-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                className="px-12 py-3 bg-gray-300 text-black rounded-full text-sm font-medium shadow hover:bg-gray-400 transition"
+              >
                 Details
-              </button>
+              </motion.button>
               {event.tags.map((tag, idx) => (
-                <button
+                <motion.button
                   key={idx}
+                  whileHover={{ scale: 1.1 }}
                   className="px-12 py-3 text-gray-300 border-2 border-gray-300 rounded-full text-sm font-medium hover:bg-gray-300 hover:text-black transition"
                 >
                   {tag}
-                </button>
+                </motion.button>
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 };
 
 const LiveEvents = ({ handleStartEvents }) => {
+  const [lineWidth, setLineWidth] = useState("100%");
+
+  const handleLineTransition = () => {
+    setLineWidth(lineWidth === "100%" ? "50%" : "100%");
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#000c18] to-[#001a36]">
+    <motion.div
+      className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#000c18] via-[#001a36] to-[#000f2e]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+    >
       <div className="relative w-4/5 max-w-5xl">
-       
         <div className="flex items-center justify-center">
-          <h1 className="text-6xl lg:text-8xl font-medium text-blue-400 tracking-wide">
+          <motion.h1
+            className="text-6xl lg:text-8xl font-medium text-blue-400 tracking-wide"
+            initial={{ y: -20 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             Live Events.
-          </h1>
-          
-          <div
+          </motion.h1>
+
+          <motion.div
             className="ml-4 cursor-pointer w-14 sm:w-16 md:w-16 lg:w-24 h-14 sm:h-16 md:h-16 lg:h-24 flex items-center justify-center font-semibold"
-            onClick={handleStartEvents}
+            whileHover={{ scale: 1.2 }}
+            onClick={() => {
+              handleStartEvents();
+              handleLineTransition();
+            }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -152,20 +183,24 @@ const LiveEvents = ({ handleStartEvents }) => {
                 d="M12 12l20 12m0 0l-20 12m20-12H4"
               />
             </svg>
-          </div>
+          </motion.div>
         </div>
 
         
-        <div className="mt-1 w-full sm:w-1/2 md:w-2/3 lg:w-3/5 border-b-2 border-dotted border-gray-500 mx-auto"></div>
+        <motion.div
+          className="mt-1 mx-auto border-b-2 border-dotted border-gray-500"
+          style={{
+            width: lineWidth,
+          }}
+          transition={{ duration: 0.5 }}
+        ></motion.div>
 
-        
-        <p className="mt-8 text-gray-400 text-sm sm:text-sm lg:text-sm w-full  sm:w-1/3 lg:w-1/3 mx-auto  text-center lg:absolute lg:right-28 lg:mr-[100px] sm:absolute sm:right-16 sm:top-[80%] md:absolute md:left-14 md:top-[100%]">
+        <p className="mt-8 text-gray-400 text-sm sm:text-sm lg:text-sm w-full sm:w-1/3 lg:w-1/3 mx-auto text-center lg:absolute lg:right-28 lg:mr-[100px] sm:absolute sm:right-16 sm:top-[80%] md:absolute md:left-14 md:top-[100%] lg:text-left md:text-left">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation.
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
