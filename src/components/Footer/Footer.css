@@ -90,8 +90,8 @@ body {
 }
 .small-text {
   position: absolute;
-  top: 159%;
-  left: 70%;
+  top: 159vh;
+  left: 69vw; 
   transform: translate(-50%, -50%);
   text-align: center;
   color: #3b82f6;
@@ -99,6 +99,7 @@ body {
   font-weight: 600;
   line-height: 1.1;
 }
+
 
 /********** Media Queries ***********/
 
