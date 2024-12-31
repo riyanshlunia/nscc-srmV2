@@ -9,6 +9,7 @@ const App = () => {
     <div className="container">
       <header className="header">
         <h1>
+        <div className="text-container">
           <span className="big-text big-text-left">SCC</span>
           <span className="big-text big-text-right">N</span>
           <div className="small-text">
@@ -16,6 +17,7 @@ const App = () => {
             <p>School</p>
             <p>Coding</p>
             <p>Club</p>
+          </div>
           </div>
         </h1>
       </header>
