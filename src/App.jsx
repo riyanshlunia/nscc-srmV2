@@ -7,7 +7,7 @@ import OurTeam from './components/OurTeam'
 import Gallery from './components/Gallery'
 import FollowUs from './components/FollowUs'
 import Footer from './components/Footer'
-
+import './App.css'
 
 
 
