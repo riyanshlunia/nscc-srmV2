@@ -332,16 +332,6 @@ const creatives = [
     category: "Creatives",
     members: [
       {
-        name: "Shaikh Ahmed",
-        designation: "Associate",
-        bio: "An Engineer by degree, an Artist by heart.",
-        social: [
-          { name: "github", url: "https://github.com/BurlyCog" },
-          { name: "linkedin", url: "https://www.linkedin.com/in/itsahmedshaikh" },
-          { name: "other_link", url: "https://dribbble.com/Burly_Ben" },
-        ],
-      },
-      {
         name: "Shreya Nair",
         designation: "Associate Director",
         bio: "A curious mind with a passion for learning and creating.",
@@ -351,6 +341,17 @@ const creatives = [
           { name: "linkedin", url: "https://www.linkedin.com/in/shreya-nair-735b31297/" },
         ],
       },
+      {
+        name: "Shaikh Ahmed",
+        designation: "Associate",
+        bio: "An Engineer by degree, an Artist by heart.",
+        social: [
+          { name: "github", url: "https://github.com/BurlyCog" },
+          { name: "linkedin", url: "https://www.linkedin.com/in/itsahmedshaikh" },
+          { name: "other_link", url: "https://dribbble.com/Burly_Ben" },
+        ],
+      },
+      
       {
         name: "Keshav Gehlot",
         designation: "Team Member",
@@ -393,43 +394,5 @@ const teamData = {
     nonTechTeam,
     creatives
 }
-// export const teamSections = [
-//   {
-//     title: "Our Team.",
-//     showArrow: true,
-//     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitati",
-//     members: []
-//   },
-//   {
-//     title: "Leads.",
-//     showArrow: false,
-//     description: "",
-//     members: leads[0].members
-//   },
-//   {
-//     title: "Core Team.",
-//     showArrow: false,
-//     description: "",
-//     members: coreTeam[0].members
-//   },
-//   {
-//     title: "Tech.",
-//     showArrow: false,
-//     description: "",
-//     members: techTeam[0].members
-//   },
-//   {
-//     title: "Non-Tech.",
-//     showArrow: false,
-//     description: "",
-//     members: nonTechTeam[0].members
-//   },
-//   {
-//     title: "Creatives.",
-//     showArrow: false,
-//     description: "",
-//     members: creatives[0].members
-//   }
-// ];
 
 export default teamData;
