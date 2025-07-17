@@ -7,10 +7,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        helvetica: ['Helvetica Neue', 'Helvetica'],
+
         'helvetica-neue': ['"Helvetica Neue"', 'Arial', 'sans-serif'],
       },
       backgroundImage: {
         'sponsi': "url('./src/assets/Background.png')",
+
       },
     },
   },
