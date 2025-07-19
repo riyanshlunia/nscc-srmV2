@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import './Events.css';
@@ -9,61 +9,94 @@ gsap.registerPlugin(ScrollTrigger);
 const Events = () => {
   const component = useRef(null);
   const carousel = useRef(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const handleNav = (direction) => {
+    const newSlide = direction === 'next'
+      ? (currentSlide + 1) % eventData.length
+      : (currentSlide - 1 + eventData.length) % eventData.length;
+    setCurrentSlide(newSlide);
+  };
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
-      gsap.to(carousel.current, {
-        x: () => -(carousel.current.scrollWidth - window.innerWidth),
-        ease: "none",
-        scrollTrigger: {
-          trigger: component.current,
-          pin: true,
-          scrub: 1,
-          end: () => "+=" + (carousel.current.scrollWidth - window.innerWidth),
-          invalidateOnRefresh: true,
+      ScrollTrigger.matchMedia({
+        // Desktop: Original sticky horizontal scroll
+        '(min-width: 768px)': function () {
+          gsap.to(carousel.current, {
+            x: () => -(carousel.current.scrollWidth - window.innerWidth),
+            ease: "none",
+            scrollTrigger: {
+              trigger: component.current,
+              pin: true,
+              scrub: 1,
+              end: () => `+=${carousel.current.scrollWidth - window.innerWidth}`,
+              invalidateOnRefresh: true,
+            },
+          });
+        },
+
+        // Mobile: New card carousel
+        '(max-width: 767px)': function () {
+          const slideWidth = carousel.current.querySelector('.event-card').offsetWidth;
+          gsap.to(carousel.current, {
+            x: -currentSlide * slideWidth,
+            duration: 0.5,
+            ease: 'power2.inOut',
+          });
         },
       });
     }, component);
     return () => ctx.revert();
-  }, []);
+  }, [currentSlide]);
 
   return (
-    <main className="app-container" ref={component}>
-      <div className="event-carousel" ref={carousel}>
-        {/* Live Events as the first full-width section */}
-        <div className="live-events-container">
-          <div className="live-events-content">
-            <h1 className="live-events-title">
-              Live Events.
-            </h1>
-            <div className="mt-1 w-full sm:w-1/2 md:w-2/3 lg:w-3/5 border-b-2 border-dotted border-gray-500 mx-auto"></div>
-            <p className="live-events-description">
-              Scroll to explore our exciting events.
-            </p>
+    <main className="events-section" ref={component}>
+      {/* Mobile-only header */}
+      <div className="live-events-header-mobile">
+        <h1 className="live-events-title-mobile">Live Events</h1>
+        <p className="live-events-description-mobile">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+        </p>
+      </div>
+
+      <div className="mobile-carousel-container">
+        <div className="event-carousel-wrapper">
+          <div className="event-carousel" ref={carousel}>
+            {/* Desktop-only full-screen panel */}
+            <div className="live-events-panel-desktop">
+              <h1 className="live-events-title-desktop">Live Events.</h1>
+              <p className="live-events-description-desktop">Scroll to explore our exciting events.</p>
+            </div>
+
+            {/* Event cards for both mobile and desktop */}
+            {eventData.map((event) => (
+              <div key={event.id} className="event-card">
+                <div className="event-card-image"><img src={event.imageUrl} alt={event.title} /></div>
+                <div className="event-card-content">
+                  <p className="live-events-title">{event.title}</p>
+                  <p className="event-card-date">{event.date}</p>
+                  <p className="live-events-description">{event.description}</p>
+                </div>
+                <div className="event-card-buttons">
+                  <button className="details-button">Details</button>
+                  {event.tags.map((tag, idx) => (
+                    <button key={idx} className="tag-button">{tag}</button>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {/* Spacer for desktop only */}
+            <div className="event-card-spacer"></div>
           </div>
         </div>
 
-        {/* The rest of the event cards */}
-        {eventData.map((event) => (
-          <div key={event.id} className="event-card">
-            <div className="event-card-image">
-              <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
-            </div>
-            <div className="event-card-content">
-              <h2 className="event-card-title">{event.title}</h2>
-              <span className="event-card-date">{event.date}</span>
-              <p className="event-card-description">{event.description}</p>
-              <div className="event-card-buttons">
-                <button className="details-button">Details</button>
-                {event.tags.map((tag, idx) => (
-                  <button key={idx} className="tag-button">{tag}</button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-        {/* Spacer card to create padding at the end */}
-        <div className="event-card-spacer"></div>
+        {/* Mobile-only navigation */}
+        <div className="carousel-nav-mobile">
+          <button onClick={() => handleNav('prev')} className="nav-arrow prev-arrow">&#8249;</button>
+          <button onClick={() => handleNav('next')} className="nav-arrow next-arrow">&#8250;</button>
+        </div>
       </div>
     </main>
   );
