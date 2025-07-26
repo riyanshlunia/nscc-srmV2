@@ -206,7 +206,7 @@
   .mobile-carousel-container {
     position: relative;
     width: 100%;
-    max-width: 350px; /* Defines the width of the carousel area */
+    max-width: 300px; /* Defines the width of the carousel area */
   }
 
   .event-carousel-wrapper {
@@ -215,8 +215,8 @@
   }
 
   .event-card {
-    width: 350px;
-    height: 450px;
+    width: 300px;
+    height: 420px;
     background-color: rgba(17, 24, 39, 0.3);
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 2rem;
