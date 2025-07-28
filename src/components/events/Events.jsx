@@ -1,72 +1,108 @@
-import React, { useLayoutEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import React, { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import './Events.css';
 import eventData from './events.json';
 
-gsap.registerPlugin(ScrollTrigger);
-
 const Events = () => {
-  const component = useRef(null);
-  const carousel = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
 
-  useLayoutEffect(() => {
-    let ctx = gsap.context(() => {
-      gsap.to(carousel.current, {
-        x: () => -(carousel.current.scrollWidth - window.innerWidth),
-        ease: "none",
-        scrollTrigger: {
-          trigger: component.current,
-          pin: true,
-          scrub: 1,
-          end: () => "+=" + (carousel.current.scrollWidth - window.innerWidth),
-          invalidateOnRefresh: true,
-        },
-      });
-    }, component);
-    return () => ctx.revert();
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  if (isMobile) {
+    return <MobileCarousel />;
+  } else {
+    return <DesktopHorizontalScroll />;
+  }
+};
+
+const DesktopHorizontalScroll = () => {
+  const targetRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: targetRef });
+
+  // Create a transform that maps scroll progress to a horizontal translation.
+  // The range [0, 1] corresponds to the start and end of the target section's scroll.
+  // The second array defines the output range for the horizontal movement.
+  const x = useTransform(scrollYProgress, [0, 1], ["1%", "-95%"]);
+
   return (
-    <main className="app-container" ref={component}>
-      <div className="event-carousel" ref={carousel}>
-        {/* Live Events as the first full-width section */}
-        <div className="live-events-container">
-          <div className="live-events-content">
-            <h1 className="live-events-title">
-              Live Events.
-            </h1>
-            <div className="mt-1 w-full sm:w-1/2 md:w-2/3 lg:w-3/5 border-b-2 border-dotted border-gray-500 mx-auto"></div>
-            <p className="live-events-description">
-              Scroll to explore our exciting events.
-            </p>
+    <section ref={targetRef} className="events-section">
+      <div className="sticky-container">
+        <motion.div style={{ x }} className="event-carousel">
+          <div className="live-events-panel-desktop">
+            <h1 className="live-events-title-desktop">Live Events.</h1>
+            <p className="live-events-description-desktop">Scroll to explore our exciting events.</p>
           </div>
+          {eventData.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
+          <div className="event-card-spacer"></div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+const MobileCarousel = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const handleNav = (direction) => {
+    const newSlide = direction === 'next'
+      ? (currentSlide + 1) % eventData.length
+      : (currentSlide - 1 + eventData.length) % eventData.length;
+    setCurrentSlide(newSlide);
+  };
+
+  return (
+    <main className="events-section">
+      <div className="live-events-header-mobile">
+        <h1 className="live-events-title-mobile">Live Events</h1>
+        <p className="live-events-description-mobile">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+        </p>
+      </div>
+
+      <div className="mobile-carousel-container">
+        <div className="event-carousel-wrapper">
+          <motion.div
+            className="event-carousel"
+            animate={{ x: `-${currentSlide * 100}%` }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            {eventData.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </motion.div>
         </div>
 
-        {/* The rest of the event cards */}
-        {eventData.map((event) => (
-          <div key={event.id} className="event-card">
-            <div className="event-card-image">
-              <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
-            </div>
-            <div className="event-card-content">
-              <h2 className="event-card-title">{event.title}</h2>
-              <span className="event-card-date">{event.date}</span>
-              <p className="event-card-description">{event.description}</p>
-              <div className="event-card-buttons">
-                <button className="details-button">Details</button>
-                {event.tags.map((tag, idx) => (
-                  <button key={idx} className="tag-button">{tag}</button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-        {/* Spacer card to create padding at the end */}
-        <div className="event-card-spacer"></div>
+        <div className="carousel-nav-mobile">
+          <button onClick={() => handleNav('prev')} className="nav-arrow prev-arrow">&#8249;</button>
+          <button onClick={() => handleNav('next')} className="nav-arrow next-arrow">&#8250;</button>
+        </div>
       </div>
     </main>
   );
 };
+
+const EventCard = ({ event }) => (
+  <div className="event-card">
+    <div className="event-card-image"><img src={event.imageUrl} alt={event.title} /></div>
+    <div className="event-card-content">
+      <p className="live-events-title">{event.title}</p>
+      <p className="event-card-date">{event.date}</p>
+      <p className="live-events-description">{event.description}</p>
+    </div>
+    <div className="event-card-buttons">
+      <button className="details-button">Details</button>
+      {event.tags.map((tag, idx) => (
+        <button key={idx} className="tag-button">{tag}</button>
+      ))}
+    </div>
+  </div>
+);
 
 export default Events;
