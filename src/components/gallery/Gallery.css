@@ -1,6 +1,12 @@
 /* Main container for the gallery section */
 .gallery-container {
-  position: relative; /* Establishes a stacking context */
+  position: relative;
+  height: 300vh; /* Set a height that is a multiple of the viewport height to create scroll space */
+}
+
+.sticky-gallery-container {
+  position: sticky;
+  top: 0;
   height: 100vh;
   overflow: hidden;
 }
@@ -40,8 +46,7 @@
   align-items: center;
   padding: 0 15vw; /* Provides space on the sides */
   gap: 10vw; /* Space between images */
-  /* Start the carousel off-screen to the right */
-  transform: translateX(100vw);
+
 }
 
 /* Wrapper for each image, dynamically sized */
