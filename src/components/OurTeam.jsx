@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
@@ -25,7 +25,37 @@ const OurTeam = ({ teamData: propTeamData }) => {
   const { scrollYProgress } = useScroll({ target: scrollRef });
   const x = useTransform(scrollYProgress, [0, 1], ["0%", "-83.33%"]); // 6 pages, so we scroll 5/6 = 83.33%
 
+  const [visibleSections, setVisibleSections] = useState(new Set());
+
   const dataToUse = propTeamData || teamData;
+
+  // Calculate which sections are fully visible
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.on("change", (latest) => {
+      const totalSections = Object.keys(dataToUse).length + 1; // +1 for intro page
+      const currentPosition = latest * (totalSections - 1);
+
+      const newVisibleSections = new Set();
+
+      // Check each section (0 is intro, 1+ are team sections)
+      for (let i = 0; i < totalSections; i++) {
+        const sectionCenter = i;
+
+        // Calculate how close the current position is to the section center
+        const distanceFromCenter = Math.abs(currentPosition - sectionCenter);
+
+        // Section is considered fully visible when we're very close to its center
+        // Using a threshold of 0.1 means the section must be at least 90% in view
+        if (distanceFromCenter <= 0.1) {
+          newVisibleSections.add(i);
+        }
+      }
+
+      setVisibleSections(newVisibleSections);
+    });
+
+    return unsubscribe;
+  }, [scrollYProgress, dataToUse]);
 
   const needsScrolling = (memberCount) => {
     const isMobile = window.innerWidth < 768;
@@ -72,7 +102,7 @@ const OurTeam = ({ teamData: propTeamData }) => {
           {/* Custom First Page */}
           <div className="w-screen h-screen relative px-4 sm:px-8 flex items-center justify-center">
             <div className="text-center max-w-4xl">
-              <h1 className="absolute top-0 left-1/2 transform -translate-x-1/2 text-4xl sm:text-6xl md:text-8xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20">
+              <h1 className="absolute top-20 left-1/2 transform -translate-x-1/2 text-4xl sm:text-6xl md:text-8xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20">
                 Our Team{" "}
                 <ArrowRight
                   className="inline ml-2 lg:ml-4 w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-[120px] lg:h-[120px]"
@@ -89,20 +119,26 @@ const OurTeam = ({ teamData: propTeamData }) => {
 
           {Object.keys(dataToUse).map((sectionKey, sectionIndex) => {
             const section = dataToUse[sectionKey][0];
+            const sectionNumber = sectionIndex + 1; // +1 because intro is section 0
+            const isFullyVisible = visibleSections.has(sectionNumber);
 
             return (
               <div
                 key={sectionIndex}
                 className="w-dvw h-dvh relative px-4 sm:px-8"
               >
-                <h1 className="absolute top-4 sm:top-6 md:top-8 left-1/2 transform -translate-x-1/2 text-3xl sm:text-4xl md:text-6xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20">
+                <h1 className="absolute top-18 sm:top-6 md:top-8 left-1/2 transform -translate-x-1/2 text-3xl sm:text-4xl md:text-6xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20 mb-10">
                   {section.category}.
                 </h1>
 
-                <div className="absolute top-20 sm:top-24 md:top-32 lg:top-40 left-1/2 transform -translate-x-1/2 w-full max-w-7xl px-4 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-180px)] lg:h-[calc(100vh-200px)]">
+                <div className="absolute top-24 sm:top-24 md:top-32 lg:top-40 left-1/2 transform -translate-x-1/2 w-full max-w-7xl px-4 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-180px)] lg:h-[calc(100vh-200px)]">
                   {needsScrolling(section.members.length) ? (
                     <div
-                      className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pl-2"
+                      className={`h-full transition-all duration-300 ${
+                        isFullyVisible
+                          ? "overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+                          : "overflow-hidden"
+                      } pl-2`}
                       style={{
                         scrollbarWidth: "thin",
                         scrollbarColor: "rgba(255, 255, 255, 0.2) transparent",
