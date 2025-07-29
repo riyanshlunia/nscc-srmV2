@@ -71,7 +71,11 @@ const OurTeam = ({ teamData: propTeamData }) => {
   };
 
   return (
-    <section ref={scrollRef} className="relative h-[600vh]">
+    <section
+      id="our-team-section"
+      ref={scrollRef}
+      className="relative h-[600vh]"
+    >
       <div className="sticky top-0 h-screen flex items-center overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-no-repeat bg-center"
