@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import BackgroundImage from "../assets/img/teams/bg.png";
 import TextureImage from "../assets/img/teams/texture.png";
 import teamData from "../assets/data/2025-26.js";
+import NSCCVector from "../assets/NSCC EVECTOR.png";
 
 import githubIcon from "../assets/img/teams/social-icons/github.png";
 import twitterIcon from "../assets/img/teams/social-icons/twitter.png";
@@ -28,6 +29,29 @@ const OurTeam = ({ teamData: propTeamData }) => {
   const [visibleSections, setVisibleSections] = useState(new Set());
 
   const dataToUse = propTeamData || teamData;
+
+  // Component for handling image with fallback
+  const MemberImage = ({ member }) => {
+    const [imageSrc, setImageSrc] = useState(`/teams/${member.name}.jpg`);
+    const [imageError, setImageError] = useState(false);
+
+    const handleImageError = () => {
+      if (!imageError) {
+        setImageError(true);
+        setImageSrc(NSCCVector);
+      }
+    };
+
+    return (
+      <img
+        className="absolute left-0 top-1/2 transform -translate-y-1/2 w-[100px] h-[100px] sm:w-[112px] sm:h-[112px] xl:w-[144px] xl:h-[144px] rounded-full object-cover border-0 shadow-lg z-10"
+        src={imageSrc}
+        alt={member.name}
+        loading="lazy"
+        onError={handleImageError}
+      />
+    );
+  };
 
   // Calculate which sections are fully visible
   useEffect(() => {
@@ -69,6 +93,55 @@ const OurTeam = ({ teamData: propTeamData }) => {
       return memberCount > 9;
     }
   };
+
+  const MemberCard = ({ member }) => (
+    <div className="w-[400px] md:w-[350px] xl:w-[400px] max-w-[90vw] relative flex items-center transition-transform duration-300 hover:scale-105">
+      {/* Card background - no left border, rectangular shape */}
+      <div className="w-full h-[100px] sm:h-[112px] xl:h-[144px] bg-gray-800/95 rounded-r-[25px] sm:rounded-r-[50px] border-t border-r border-b border-white backdrop-blur-sm shadow-lg ml-[50px] sm:ml-[56px] xl:ml-[72px]">
+        {/* Content inside the card */}
+        <div className="flex flex-col justify-center h-full pl-[50px] sm:pl-[60px] xl:pl-[90px] pr-3 sm:pr-4 xl:pr-6">
+          <h3 className="text-white text-sm sm:text-base xl:text-xl font-normal font-helvetica mb-1 line-clamp-2 sm:line-clamp-1">
+            {member.name}
+          </h3>
+          <p className="text-white text-xs sm:text-sm xl:text-lg font-extralight font-helvetica mb-2 sm:mb-3 line-clamp-2 sm:line-clamp-1">
+            {member.designation}
+          </p>
+
+          <div className="flex gap-1 sm:gap-2 flex-wrap">
+            {member.social
+              .filter(
+                (socialItem) => socialItem.url && socialItem.url.trim() !== ""
+              )
+              .slice(0, 4)
+              .map((socialItem, socialIndex) => {
+                const iconSrc = socialIconMap[socialItem.name.toLowerCase()];
+                if (!iconSrc) return null;
+
+                return (
+                  <a
+                    key={socialIndex}
+                    href={socialItem.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-6 h-6 sm:w-8 sm:h-8 xl:w-10 xl:h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#64b5f6] transition-all duration-300 hover:scale-110 border border-white/20"
+                    title={socialItem.name}
+                  >
+                    <img
+                      src={iconSrc}
+                      alt={socialItem.name}
+                      className="w-4 h-4 sm:w-6 sm:h-6 xl:w-8 xl:h-8 object-contain filter brightness-0 invert hover:brightness-100 hover:invert-0 transition-all duration-300"
+                    />
+                  </a>
+                );
+              })}
+          </div>
+        </div>
+      </div>
+
+      {/* Circular image positioned absolutely to overflow from the left side */}
+      <MemberImage member={member} />
+    </div>
+  );
 
   return (
     <section
@@ -148,7 +221,7 @@ const OurTeam = ({ teamData: propTeamData }) => {
                         scrollbarColor: "rgba(255, 255, 255, 0.2) transparent",
                       }}
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center place-items-center pb-8 pr-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 xl:gap-6 justify-items-center place-items-center pb-8 pr-4 md:px-8 xl:px-4">
                         {section.members.map((member, memberIndex) => (
                           <MemberCard key={memberIndex} member={member} />
                         ))}
@@ -158,17 +231,17 @@ const OurTeam = ({ teamData: propTeamData }) => {
                     <div className="h-full flex items-center justify-center">
                       <div
                         className={`
-                        grid gap-6 justify-items-center place-items-center
+                        grid gap-6 md:gap-8 xl:gap-6 justify-items-center place-items-center md:px-8 xl:px-4
                         ${
                           section.members.length === 1
                             ? "grid-cols-1"
                             : section.members.length === 2
-                            ? "grid-cols-1 lg:grid-cols-2"
+                            ? "grid-cols-1 xl:grid-cols-2"
                             : section.members.length <= 4
                             ? "grid-cols-1 md:grid-cols-2"
                             : section.members.length <= 6
-                            ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-                            : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"
+                            ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                            : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
                         }
                       `}
                       >
@@ -187,56 +260,5 @@ const OurTeam = ({ teamData: propTeamData }) => {
     </section>
   );
 };
-
-const MemberCard = ({ member }) => (
-  <div className="w-[400px] max-w-[90vw] flex items-center bg-gray-800/95 rounded-tl-[50px] rounded-tr-[25px] rounded-bl-[50px] rounded-br-[25px] sm:rounded-tl-[100px] sm:rounded-tr-[50px] sm:rounded-bl-[100px] sm:rounded-br-[50px] border border-white backdrop-blur-sm transition-transform duration-300 hover:scale-105 shadow-lg">
-    <div className="flex-shrink-0">
-      <img
-        className="w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36 rounded-full object-cover bg-blend-luminosity"
-        src={`/teams/${member.name}.jpg`}
-        alt={member.name}
-        loading="lazy"
-      />
-    </div>
-
-    <div className="flex-1 ml-3 sm:ml-6 mr-2 sm:mr-4 py-2 sm:py-4 min-h-[100px] sm:min-h-[140px] flex flex-col justify-center">
-      <h3 className="text-white text-sm sm:text-lg lg:text-xl font-normal font-helvetica mb-1 line-clamp-2 sm:line-clamp-1">
-        {member.name}
-      </h3>
-      <p className="text-white text-xs sm:text-base lg:text-lg font-extralight font-helvetica mb-2 sm:mb-3 line-clamp-2 sm:line-clamp-1">
-        {member.designation}
-      </p>
-
-      <div className="flex gap-1 sm:gap-2 flex-wrap">
-        {member.social
-          .filter(
-            (socialItem) => socialItem.url && socialItem.url.trim() !== ""
-          )
-          .slice(0, 4)
-          .map((socialItem, socialIndex) => {
-            const iconSrc = socialIconMap[socialItem.name.toLowerCase()];
-            if (!iconSrc) return null;
-
-            return (
-              <a
-                key={socialIndex}
-                href={socialItem.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#64b5f6] transition-all duration-300 hover:scale-110 border border-white/20"
-                title={socialItem.name}
-              >
-                <img
-                  src={iconSrc}
-                  alt={socialItem.name}
-                  className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 object-contain filter brightness-0 invert hover:brightness-100 hover:invert-0 transition-all duration-300"
-                />
-              </a>
-            );
-          })}
-      </div>
-    </div>
-  </div>
-);
 
 export default OurTeam;
