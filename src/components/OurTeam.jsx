@@ -1,6 +1,5 @@
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 import BackgroundImage from "../assets/img/teams/bg.png";
@@ -13,8 +12,6 @@ import linkedinIcon from "../assets/img/teams/social-icons/linkedin.png";
 import instagramIcon from "../assets/img/teams/social-icons/instagram.png";
 import globeIcon from "../assets/img/teams/social-icons/globe.png";
 
-gsap.registerPlugin(ScrollTrigger);
-
 const socialIconMap = {
   github: githubIcon,
   twitter: twitterIcon,
@@ -24,62 +21,41 @@ const socialIconMap = {
 };
 
 const OurTeam = ({ teamData: propTeamData }) => {
-  const containerRef = useRef(null);
-  const scrollWrapperRef = useRef(null);
+  const scrollRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: scrollRef });
+  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-83.33%"]); // 6 pages, so we scroll 5/6 = 83.33%
+
+  const [visibleSections, setVisibleSections] = useState(new Set());
 
   const dataToUse = propTeamData || teamData;
 
+  // Calculate which sections are fully visible
   useEffect(() => {
-    const container = containerRef.current;
-    const scrollWrapper = scrollWrapperRef.current;
+    const unsubscribe = scrollYProgress.on("change", (latest) => {
+      const totalSections = Object.keys(dataToUse).length + 1; // +1 for intro page
+      const currentPosition = latest * (totalSections - 1);
 
-    if (!container || !scrollWrapper) return;
+      const newVisibleSections = new Set();
 
-    let scrollTween;
+      // Check each section (0 is intro, 1+ are team sections)
+      for (let i = 0; i < totalSections; i++) {
+        const sectionCenter = i;
 
-    const setupScrollTrigger = () => {
-      if (scrollTween) {
-        scrollTween.kill();
+        // Calculate how close the current position is to the section center
+        const distanceFromCenter = Math.abs(currentPosition - sectionCenter);
+
+        // Section is considered fully visible when we're very close to its center
+        // Using a threshold of 0.1 means the section must be at least 90% in view
+        if (distanceFromCenter <= 0.1) {
+          newVisibleSections.add(i);
+        }
       }
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
 
-      const totalWidth = scrollWrapper.scrollWidth;
-      const viewportWidth = window.innerWidth;
-      const scrollDistance = totalWidth - viewportWidth;
+      setVisibleSections(newVisibleSections);
+    });
 
-      if (scrollDistance > 0) {
-        scrollTween = gsap.to(scrollWrapper, {
-          x: -scrollDistance,
-          ease: "none",
-          scrollTrigger: {
-            trigger: container,
-            start: "top top",
-            end: () => `+=${scrollDistance}`,
-            scrub: 1,
-            pin: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
-        });
-      }
-    };
-
-    setupScrollTrigger();
-
-    const handleResize = () => {
-      setupScrollTrigger();
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (scrollTween) {
-        scrollTween.kill();
-      }
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-    };
-  }, []);
+    return unsubscribe;
+  }, [scrollYProgress, dataToUse]);
 
   const needsScrolling = (memberCount) => {
     const isMobile = window.innerWidth < 768;
@@ -95,112 +71,120 @@ const OurTeam = ({ teamData: propTeamData }) => {
   };
 
   return (
-    <div className="w-full h-dvh overflow-hidden relative" ref={containerRef}>
-      <div
-        className="absolute inset-0 bg-cover bg-no-repeat bg-center"
-        style={{ backgroundImage: `url(${BackgroundImage})` }}
-      />
-
-      <div
-        className="absolute inset-0 bg-repeat opacity-50"
-        style={{ backgroundImage: `url(${TextureImage})` }}
-      />
-
-      {/* Grid backgound verti/horizontal lines overlay */}
-      <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 pointer-events-none mix-blend-soft-light">
-        <div className="col-start-1 col-end-5 row-start-1 row-end-5 border-l border-r border-[#AAAAAA]"></div>
-        <div className="col-start-2 col-end-5 row-start-1 row-end-5 border-l border-[#AAAAAA]"></div>
-        <div className="col-start-3 col-end-5 row-start-1 row-end-5 border-l border-[#AAAAAA]"></div>
-        <div className="col-start-4 col-end-5 row-start-1 row-end-5 border-l border-[#AAAAAA]"></div>
-        <div className="col-start-1 col-end-5 row-start-1 row-end-5 border-t border-b border-[#AAAAAA]"></div>
-        <div className="col-start-1 col-end-5 row-start-2 row-end-5 border-t border-[#AAAAAA]"></div>
-        <div className="col-start-1 col-end-5 row-start-3 row-end-5 border-t border-[#AAAAAA]"></div>
-        <div className="col-start-1 col-end-5 row-start-4 row-end-5 border-t border-[#AAAAAA]"></div>
-      </div>
-
-      <div
-        className="flex h-full relative z-10"
-        ref={scrollWrapperRef}
-        style={{
-          willChange: "transform",
-          width: `${(Object.keys(dataToUse).length + 1) * 100}vw`,
-        }}
-      >
-        {/* Custom First Page */}
-        <div className="w-screen h-screen relative px-4 sm:px-8 flex items-center justify-center">
-          <div className="text-center max-w-4xl">
-            <h1 className="absolute top-0 left-1/2 transform -translate-x-1/2 text-4xl sm:text-6xl md:text-8xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20">
-              Our Team{" "}
-              <ArrowRight
-                className="inline ml-2 lg:ml-4 w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-[120px] lg:h-[120px]"
-                color="#FFFFFF"
-              />
-            </h1>
-            <p className="text-[#AAAAAA] text-sm sm:text-base md:text-lg lg:text-xl font-helvetica font-extralight leading-relaxed max-w-2xl mx-auto">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitati
-            </p>
-          </div>
+    <section
+      id="our-team-section"
+      ref={scrollRef}
+      className="relative h-[600vh]"
+    >
+      <div className="sticky top-0 h-screen flex items-center overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-no-repeat bg-center"
+          style={{ backgroundImage: `url(${BackgroundImage})` }}
+        />
+        <div
+          className="absolute inset-0 bg-repeat opacity-50"
+          style={{ backgroundImage: `url(${TextureImage})` }}
+        />
+        <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 pointer-events-none mix-blend-soft-light">
+          <div className="col-start-1 col-end-5 row-start-1 row-end-5 border-l border-r border-[#AAAAAA]"></div>
+          <div className="col-start-2 col-end-5 row-start-1 row-end-5 border-l border-[#AAAAAA]"></div>
+          <div className="col-start-3 col-end-5 row-start-1 row-end-5 border-l border-[#AAAAAA]"></div>
+          <div className="col-start-4 col-end-5 row-start-1 row-end-5 border-l border-[#AAAAAA]"></div>
+          <div className="col-start-1 col-end-5 row-start-1 row-end-5 border-t border-b border-[#AAAAAA]"></div>
+          <div className="col-start-1 col-end-5 row-start-2 row-end-5 border-t border-[#AAAAAA]"></div>
+          <div className="col-start-1 col-end-5 row-start-3 row-end-5 border-t border-[#AAAAAA]"></div>
+          <div className="col-start-1 col-end-5 row-start-4 row-end-5 border-t border-[#AAAAAA]"></div>
         </div>
 
-        {Object.keys(dataToUse).map((sectionKey, sectionIndex) => {
-          const section = dataToUse[sectionKey][0];
-
-          return (
-            <div
-              key={sectionIndex}
-              className="w-dvw h-dvh relative px-4 sm:px-8"
-            >
-              <h1 className="absolute top-4 sm:top-6 md:top-8 left-1/2 transform -translate-x-1/2 text-3xl sm:text-4xl md:text-6xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20">
-                {section.category}.
+        <motion.div
+          className="flex h-full relative z-10"
+          style={{
+            x,
+            width: `${(Object.keys(dataToUse).length + 1) * 100}vw`,
+          }}
+        >
+          {/* Custom First Page */}
+          <div className="w-screen h-screen relative px-4 sm:px-8 flex items-center justify-center">
+            <div className="text-center max-w-4xl">
+              <h1 className="absolute top-20 left-1/2 transform -translate-x-1/2 text-4xl sm:text-6xl md:text-8xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20">
+                Our Team{" "}
+                <ArrowRight
+                  className="inline ml-2 lg:ml-4 w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-[120px] lg:h-[120px]"
+                  color="#FFFFFF"
+                />
               </h1>
-
-              <div className="absolute top-20 sm:top-24 md:top-32 lg:top-40 left-1/2 transform -translate-x-1/2 w-full max-w-7xl px-4 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-180px)] lg:h-[calc(100vh-200px)]">
-                {needsScrolling(section.members.length) ? (
-                  <div
-                    className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent pl-2"
-                    style={{
-                      scrollbarWidth: "thin",
-                      scrollbarColor: "rgba(255, 255, 255, 0.2) transparent",
-                    }}
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center place-items-center pb-8 pr-4">
-                      {section.members.map((member, memberIndex) => (
-                        <MemberCard key={memberIndex} member={member} />
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <div
-                      className={`
-                      grid gap-6 justify-items-center place-items-center
-                      ${
-                        section.members.length === 1
-                          ? "grid-cols-1"
-                          : section.members.length === 2
-                          ? "grid-cols-1 lg:grid-cols-2"
-                          : section.members.length <= 4
-                          ? "grid-cols-1 md:grid-cols-2"
-                          : section.members.length <= 6
-                          ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-                          : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"
-                      }
-                    `}
-                    >
-                      {section.members.map((member, memberIndex) => (
-                        <MemberCard key={memberIndex} member={member} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <p className="text-[#AAAAAA] text-sm sm:text-base md:text-lg lg:text-xl font-helvetica font-extralight leading-relaxed max-w-2xl mx-auto">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+                enim ad minim veniam, quis nostrud exercitati
+              </p>
             </div>
-          );
-        })}
+          </div>
+
+          {Object.keys(dataToUse).map((sectionKey, sectionIndex) => {
+            const section = dataToUse[sectionKey][0];
+            const sectionNumber = sectionIndex + 1; // +1 because intro is section 0
+            const isFullyVisible = visibleSections.has(sectionNumber);
+
+            return (
+              <div
+                key={sectionIndex}
+                className="w-dvw h-dvh relative px-4 sm:px-8"
+              >
+                <h1 className="absolute top-18 sm:top-6 md:top-8 left-1/2 transform -translate-x-1/2 text-3xl sm:text-4xl md:text-6xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20 mb-10">
+                  {section.category}.
+                </h1>
+
+                <div className="absolute top-24 sm:top-24 md:top-32 lg:top-40 left-1/2 transform -translate-x-1/2 w-full max-w-7xl px-4 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-180px)] lg:h-[calc(100vh-200px)]">
+                  {needsScrolling(section.members.length) ? (
+                    <div
+                      className={`h-full transition-all duration-300 ${
+                        isFullyVisible
+                          ? "overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+                          : "overflow-hidden"
+                      } pl-2`}
+                      style={{
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "rgba(255, 255, 255, 0.2) transparent",
+                      }}
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center place-items-center pb-8 pr-4">
+                        {section.members.map((member, memberIndex) => (
+                          <MemberCard key={memberIndex} member={member} />
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <div
+                        className={`
+                        grid gap-6 justify-items-center place-items-center
+                        ${
+                          section.members.length === 1
+                            ? "grid-cols-1"
+                            : section.members.length === 2
+                            ? "grid-cols-1 lg:grid-cols-2"
+                            : section.members.length <= 4
+                            ? "grid-cols-1 md:grid-cols-2"
+                            : section.members.length <= 6
+                            ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                            : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"
+                        }
+                      `}
+                      >
+                        {section.members.map((member, memberIndex) => (
+                          <MemberCard key={memberIndex} member={member} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </motion.div>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -53,8 +53,15 @@
 /* Desktop specific styles */
 @media (min-width: 768px) {
   .events-section {
+    /* Set a height that is a multiple of the viewport height to create scroll space */
+    height: 300vh;
+  }
+
+  .sticky-container {
+    position: sticky;
+    top: 0;
     height: 100vh;
-    overflow: hidden;
+    overflow: hidden; /* This will contain the horizontal scroll */
   }
 
   .live-events-header-mobile, .carousel-nav-mobile {
