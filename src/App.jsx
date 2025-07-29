@@ -16,15 +16,23 @@ import './App.css'
 export default function App() {
   return (
     <>
-    <Hero />
-    <AboutUs />
-    <Domains />
-    <Events />
-    <Sponsers />
-    <OurTeam />
-    <Gallery />
-    <FollowUs />
-    <Footer />
+      <Hero />
+      <AboutUs />
+      <div id="domains">
+        <Domains />
+      </div>
+      <div id="events">
+        <Events />
+      </div>
+      <Sponsers />
+      <div id="team">
+        <OurTeam />
+      </div>
+      <Gallery />
+      <FollowUs />
+      <div id="contact">
+        <Footer />
+      </div>
     </>
   )
 }

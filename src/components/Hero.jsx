@@ -1,5 +1,4 @@
 "use client"
-
 import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import NSCCEvectorImg from "../assets/NSCC EVECTOR.png"
@@ -26,8 +25,8 @@ const ShaderBackground = () => {
     mountRef.current.appendChild(renderer.domElement)
 
     const material = new THREE.ShaderMaterial({
-      fragmentShader,
-      vertexShader,
+      fragmentShader: originalFragmentShader,
+      vertexShader: originalVertexShader,
       uniforms: {
         u_color: { value: [0.3137254901960784, 0, 1] },
         u_background: { value: [0.039, 0.098, 0.184, 1] },
@@ -40,16 +39,29 @@ const ShaderBackground = () => {
       transparent: true,
     })
 
-    const geometry = new THREE.PlaneGeometry(1024, 1024)
+    const geometry = new THREE.PlaneGeometry(1, 1)
     const mesh = new THREE.Mesh(geometry, material)
     scene.add(mesh)
-    camera.position.z = 5
+    mesh.position.z = -1
+    camera.position.z = 0
+
+    const resizePlane = () => {
+      const distance = Math.abs(mesh.position.z - camera.position.z)
+      const fovInRadians = (camera.fov * Math.PI) / 180
+      const height = 2 * Math.tan(fovInRadians / 2) * distance
+      const width = height * camera.aspect
+      mesh.scale.set(width, height, 1)
+    }
+
+    resizePlane()
 
     const mouse = { x: 0, y: 0 }
+
     const handleMouseMove = (event) => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
     }
+
     window.addEventListener("mousemove", handleMouseMove)
 
     const clock = new THREE.Clock()
@@ -61,6 +73,7 @@ const ShaderBackground = () => {
       renderer.render(scene, camera)
       animationRef.current = requestAnimationFrame(animate)
     }
+
     animate()
 
     const handleResize = () => {
@@ -68,7 +81,9 @@ const ShaderBackground = () => {
       camera.updateProjectionMatrix()
       renderer.setSize(window.innerWidth, window.innerHeight)
       material.uniforms.u_resolution.value = [window.innerWidth, window.innerHeight]
+      resizePlane()
     }
+
     window.addEventListener("resize", handleResize)
 
     return () => {
@@ -85,7 +100,8 @@ const ShaderBackground = () => {
   return <div ref={mountRef} className="absolute inset-0 z-0 opacity-80" />
 }
 
-const fragmentShader = `
+// Your original fragment shader
+const originalFragmentShader = `
 uniform vec2 u_resolution;
 uniform float u_time;
 uniform vec3 u_color;
@@ -123,18 +139,33 @@ void main() {
   color.g = max(u_background.g,color.g);
   color.b = max(u_background.b,color.b);
   gl_FragColor = color;
-}`
+}
+`
 
-const vertexShader = `
+// Your original vertex shader
+const originalVertexShader = `
 void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`
+}
+`
 
 export default function Hero() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const heroRef = useRef(null)
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    }
+    // Close mobile menu if open
+    setIsMenuOpen(false)
+  }
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -163,7 +194,6 @@ export default function Hero() {
         <div className="absolute top-0 left-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
         <div className="absolute top-0 left-1/2 w-[1px] h-full bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
         <div className="absolute top-0 left-3/4 w-[1px] h-full bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
-
         {/* Horizontal Lines */}
         <div className="absolute top-1/4 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
         <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
@@ -178,14 +208,19 @@ export default function Hero() {
 
         {/* Desktop Navigation */}
         <ul className="hidden lg:flex w-full justify-between px-4 xl:px-20 max-w-4xl">
-          {["Domains", "Live Events", "Our Team", "Contact"].map((item) => (
-            <li key={item} className={`px-2 xl:px-4 py-4 ${item === "Contact" ? "bg-blue-800 rounded" : ""}`}>
-              <a
-                href="#"
-                className="relative after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-white after:transition-all after:duration-300 hover:after:w-full font-helvetica-neue text-sm xl:text-base"
+          {[
+            { name: "Domains", id: "domains" },
+            { name: "Live Events", id: "events" },
+            { name: "Our Team", id: "team" },
+            { name: "Contact", id: "contact" },
+          ].map((item) => (
+            <li key={item.name} className={`px-2 xl:px-4 py-4 ${item.name === "Contact" ? "bg-blue-800 rounded" : ""}`}>
+              <button
+                onClick={() => scrollToSection(item.id)}
+                className="relative after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-white after:transition-all after:duration-300 hover:after:w-full font-helvetica-neue text-sm xl:text-base cursor-pointer"
               >
-                {item}
-              </a>
+                {item.name}
+              </button>
             </li>
           ))}
         </ul>
@@ -218,7 +253,7 @@ export default function Hero() {
       >
         {/* Backdrop */}
         <div
-          className={`absolute inset-0 bg-[#0a192f]/100  transition-opacity duration-500 ${isMenuOpen ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 bg-[#0a192f]/100 transition-opacity duration-500 ${isMenuOpen ? "opacity-80" : "opacity-0"}`}
         ></div>
 
         {/* Menu Content */}
@@ -239,29 +274,36 @@ export default function Hero() {
             </button>
           </div>
 
-          {/* Menu Items */}
-          <div className="flex-1 flex flex-col justify-center px-6">
-            <ul className="space-y-6">
-              {["Domains", "Live Events", "Our Team", "Contact"].map((item, index) => (
+          {/* Menu Items - Moved to Top */}
+          <div className="flex flex-col items-center px-6 pt-12">
+            <ul className="space-y-6 w-full max-w-xs">
+              {[
+                { name: "Domains", id: "domains" },
+                { name: "Live Events", id: "events" },
+                { name: "Our Team", id: "team" },
+                { name: "Contact", id: "contact" },
+              ].map((item, index) => (
                 <li
-                  key={item}
-                  className={`transform transition-all duration-500 delay-${index * 100} ${isMenuOpen ? "translate-x-0 opacity-100" : "translate-x-8 opacity-0"}`}
+                  key={item.name}
+                  className={`transform transition-all duration-500 delay-${index * 100} ${isMenuOpen ? "translate-x-0 opacity-100" : "translate-x-8 opacity-0"} text-center`}
                 >
-                  <a
-                    href="#"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`block text-2xl font-medium transition-all duration-300 hover:translate-x-2 ${
-                      item === "Contact"
+                  <button
+                    onClick={() => scrollToSection(item.id)}
+                    className={`block text-2xl font-medium transition-all duration-300 hover:scale-105 w-full text-center ${
+                      item.name === "Contact"
                         ? "text-white bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow-lg"
                         : "text-white/90 hover:text-white border-b border-transparent hover:border-white/30 pb-2"
                     }`}
                   >
-                    {item}
-                  </a>
+                    {item.name}
+                  </button>
                 </li>
               ))}
             </ul>
           </div>
+
+          {/* Spacer to push footer to bottom */}
+          <div className="flex-1"></div>
 
           {/* Footer */}
           <div className="p-6 border-t border-white/10">
@@ -302,4 +344,3 @@ export default function Hero() {
     </div>
   )
 }
-
