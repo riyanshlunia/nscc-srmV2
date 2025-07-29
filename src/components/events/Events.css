@@ -1,0 +1,324 @@
+@keyframes swivel {
+  0% { transform: rotateY(0deg); }
+  40% { transform: rotateY(30deg); }
+}
+
+.app-container {
+  background-color: #000c18;
+}
+
+/* Live Events Section */
+.live-events-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(to bottom, #000c18, #001a36);
+  padding: 0 2rem; /* Add some padding for content */
+}
+
+.live-events-content {
+  max-width: 80%;
+}
+
+.live-events-title {
+  font-size: clamp(1.5rem, 1vw, 5rem);
+  font-weight: 500;
+  color: #60a5fa; /* text-blue-400 */
+  letter-spacing: 0.025em;
+}
+
+.live-events-description {
+  margin-top: 2rem;
+  color: #9ca3af; /* General Section Styling */
+}
+
+.events-section {
+  width: 100%;
+  color: white;
+  background-color: #0b0f19; /* Default background for desktop */
+}
+
+.event-carousel-wrapper {
+  width: 100%;
+}
+
+.event-carousel {
+  display: flex;
+}
+
+/* Desktop specific styles */
+@media (min-width: 768px) {
+  .events-section {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .live-events-header-mobile, .carousel-nav-mobile {
+    display: none;
+  }
+
+  .event-carousel {
+    height: 100%;
+    width: max-content;
+    align-items: center;
+  }
+
+  .live-events-panel-desktop {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .live-events-title-desktop {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 500;
+    color: #60a5fa;
+  }
+
+  .live-events-description-desktop {
+    margin-top: 1rem;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: #9ca3af;
+  }
+
+  .event-card {
+    width: 380px;
+    height: 500px;
+    margin: 0 2rem;
+    flex-shrink: 0;
+    background-color: #0d1a2e;
+    border: 1px solid #253a5e;
+    border-radius: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .event-card-image {
+    height: 45%;
+    background-color: #1a2c47;
+    border-radius: 1rem;
+  }
+
+
+
+  .event-card-date {
+    color: #8cb2f5;
+    margin-bottom: 1rem;
+  }
+
+  .event-card-description {
+    color: #a0aec0; /* text-gray-400 */
+    font-size: 0.9rem;
+  }
+
+  .event-card-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .event-card .details-button,
+  .event-card .tag-button {
+    border-radius: 9999px;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: capitalize;
+  }
+
+  .event-card .details-button {
+    background-color: #e5e7eb; /* gray-200 */
+    color: #1f2937; /* gray-800 */
+    border: none;
+  }
+
+  .event-card .details-button:hover {
+    background-color: #f3f4f6; /* gray-100 */
+  }
+
+  .event-card .tag-button {
+    background-color: transparent;
+    color: #a0aec0; /* gray-400 */
+    border: 1px solid #4a5568; /* gray-600 */
+  }
+
+  .event-card .tag-button:hover {
+    background-color: #1a2c47;
+    border-color: #a0aec0;
+  }
+
+  .event-card-spacer {
+    width: calc(100vw - 400px - 4rem);
+    flex-shrink: 0;
+  }
+}
+
+/* Mobile specific styles */
+@media (max-width: 767px) {
+  .events-section {
+    background: linear-gradient(160deg, #0a192f 0%, #1d3b5a 50%, #2c5a8e 100%);
+    min-height: 100vh;
+    padding: 4rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+  }
+
+  .live-events-panel-desktop, .event-card-spacer {
+    display: none;
+  }
+
+  .live-events-header-mobile {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .live-events-title-mobile {
+    font-size: 2.5rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  .live-events-description-mobile {
+    font-size: 0.9rem;
+    color: #bdc3c7;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .mobile-carousel-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px; /* Defines the width of the carousel area */
+  }
+
+  .event-carousel-wrapper {
+    width: 100%;
+    overflow: hidden; /* This clips the cards, but not the arrows anymore */
+  }
+
+  .event-card {
+    width: 300px;
+    height: 420px;
+    background-color: rgba(17, 24, 39, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-shrink: 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .event-card-image {
+    height: 70%;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+  }
+
+  .event-card-buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 0.5rem;
+  }
+
+  .details-button,
+  .tag-button {
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 9999px;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: capitalize;
+  }
+
+  .details-button {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #111827;
+  }
+
+  .details-button:hover {
+    background-color: white;
+  }
+
+  .tag-button {
+    background-color: transparent;
+    color: white;
+  }
+
+  .tag-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .carousel-nav-mobile {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% + 90px); /* Increased width to push arrows out */
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+
+  .nav-arrow {
+    pointer-events: all;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+  }
+
+  .nav-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
