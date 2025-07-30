@@ -37,8 +37,8 @@ const ShaderBackground = () => {
     mountRef.current.appendChild(renderer.domElement);
 
     const material = new THREE.ShaderMaterial({
-      fragmentShader: originalFragmentShader,
-      vertexShader: originalVertexShader,
+      fragmentShader: fragmentShader,
+      vertexShader: vertexShader,
       uniforms: {
         u_color: { value: [0.3137254901960784, 0, 1] },
         u_background: { value: [0.039, 0.098, 0.184, 1] },
@@ -150,8 +150,8 @@ void main() {
   gl_FragColor = color;
 }`;
 
-// Your original vertex shader
-const originalVertexShader = `
+// Vertex shader
+const vertexShader = `
 void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;
@@ -222,8 +222,8 @@ export default function Hero() {
                 href="#"
                 className="relative after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-white after:transition-all after:duration-300 hover:after:w-full font-helvetica-neue text-sm xl:text-base"
               >
-                {item.name}
-              </button>
+                {item}
+              </a>
             </li>
           ))}
         </ul>
