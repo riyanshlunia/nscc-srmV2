@@ -17,6 +17,7 @@
     "@react-three/fiber": "^8.18.0",
     "gsap": "^3.13.0",
     "lucide-react": "^0.525.0",
+    "motion": "^12.23.11",
     "react": "^18.3.1",
     "react-countup": "^6.5.3",
     "react-dom": "^18.3.1",

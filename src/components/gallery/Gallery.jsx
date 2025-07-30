@@ -1,11 +1,7 @@
-import React, { useRef, useLayoutEffect, useState, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import './Gallery.css';
 
-gsap.registerPlugin(ScrollTrigger);
-
-// Updated image data with varying dimensions and vertical offsets
 const galleryImages = [
   { id: 1, src: 'https://placehold.co/600x800/1c2a4a/ffffff?text=Image+1', w: 600, h: 800, y: '5%' },
   { id: 2, src: 'https://placehold.co/800x600/3a506b/ffffff?text=Image+2', w: 800, h: 600, y: '-10%' },
@@ -18,88 +14,63 @@ const galleryImages = [
 ];
 
 export default function Gallery() {
-  const component = useRef(null);
-  const carousel = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  useLayoutEffect(() => {
-    if (isMobile) return; // Skip GSAP animations on mobile
+  return isMobile ? <MobileGallery /> : <DesktopGallery />;
+}
 
-    let ctx = gsap.context(() => {
-      const carouselElement = carousel.current;
-      const computedStyle = window.getComputedStyle(carouselElement);
-      const paddingLeft = parseFloat(computedStyle.paddingLeft);
-      const paddingRight = parseFloat(computedStyle.paddingRight);
+const DesktopGallery = () => {
+  const galleryRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: galleryRef });
 
-      // The total scrollable width is the full width of the carousel content, minus the viewport width, plus the right padding to ensure the last item is fully visible.
-      const totalScroll = carouselElement.scrollWidth - window.innerWidth + paddingRight;
-
-      let tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: component.current,
-          pin: true,
-          scrub: 1,
-          end: () => `+=${totalScroll}`,
-          invalidateOnRefresh: true,
-        },
-      });
-
-      // Animate the carousel into view from the right, then scroll it to the left
-      tl.from(carouselElement, { x: '100vw', duration: 0.15 })
-        .to(carouselElement, { x: `-${totalScroll}px`, duration: 0.8 });
-
-    }, component);
-    return () => ctx.revert();
-  }, [isMobile]);
-
-  if (isMobile) {
-    return (
-      <div className="gallery-container mobile">
-        <div className="gallery-mobile-content">
-          <h1 className="gallery-title mobile">Gallery</h1>
-          <div className="gallery-mobile-grid">
-            {galleryImages.slice(0, 4).map((image) => (
-              <div key={image.id} className="gallery-mobile-image-wrapper">
-                <img src={image.src} alt={`Gallery image ${image.id}`} className="gallery-mobile-image" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // This will map the scroll progress (0 to 1) to a horizontal translation.
+  // You might need to adjust the output range [-200%, 0%] based on the total width of your gallery content.
+  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-75%']);
 
   return (
-    <div className="gallery-container" ref={component}>
-      <div className="gallery-background">
-        <h1 className="gallery-title">Gallery.</h1>
+    <section ref={galleryRef} className="gallery-container">
+      <div className="sticky-gallery-container">
+        <div className="gallery-background">
+          <h1 className="gallery-title">Gallery.</h1>
+        </div>
+        <motion.div className="gallery-carousel" style={{ x }}>
+          {galleryImages.map((image) => (
+            <div
+              key={image.id}
+              className="gallery-image-wrapper"
+              style={{
+                '--w': `${image.w}px`,
+                '--h': `${image.h}px`,
+                transform: `translateY(${image.y})`,
+              }}
+            >
+              <img src={image.src} alt={`Gallery image ${image.id}`} className="gallery-image" />
+            </div>
+          ))}
+        </motion.div>
       </div>
-      <div className="gallery-carousel" ref={carousel}>
-        {galleryImages.map((image) => (
-          <div
-            key={image.id}
-            className="gallery-image-wrapper"
-            style={{
-              '--w': `${image.w}px`,
-              '--h': `${image.h}px`,
-              transform: `translateY(${image.y})`,
-            }}
-          >
-            <img src={image.src} alt={`Gallery image ${image.id}`} className="gallery-image" />
+    </section>
+  );
+};
+
+const MobileGallery = () => (
+  <div className="gallery-container mobile">
+    <div className="gallery-mobile-content">
+      <h1 className="gallery-title mobile">Gallery</h1>
+      <div className="gallery-mobile-grid">
+        {galleryImages.slice(0, 4).map((image) => (
+          <div key={image.id} className="gallery-mobile-image-wrapper">
+            <img src={image.src} alt={`Gallery image ${image.id}`} className="gallery-mobile-image" />
           </div>
         ))}
       </div>
     </div>
-  );
-}
+  </div>
+);

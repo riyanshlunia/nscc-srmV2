@@ -1,14 +1,53 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import React, { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import './Events.css';
 import eventData from './events.json';
 
-gsap.registerPlugin(ScrollTrigger);
-
 const Events = () => {
-  const component = useRef(null);
-  const carousel = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  if (isMobile) {
+    return <MobileCarousel />;
+  } else {
+    return <DesktopHorizontalScroll />;
+  }
+};
+
+const DesktopHorizontalScroll = () => {
+  const targetRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: targetRef });
+
+  // Create a transform that maps scroll progress to a horizontal translation.
+  // The range [0, 1] corresponds to the start and end of the target section's scroll.
+  // The second array defines the output range for the horizontal movement.
+  const x = useTransform(scrollYProgress, [0, 1], ["1%", "-95%"]);
+
+  return (
+    <section ref={targetRef} className="events-section">
+      <div className="sticky-container">
+        <motion.div style={{ x }} className="event-carousel">
+          <div className="live-events-panel-desktop">
+            <h1 className="live-events-title-desktop">Live Events.</h1>
+            <p className="live-events-description-desktop">Scroll to explore our exciting events.</p>
+          </div>
+          {eventData.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
+          <div className="event-card-spacer"></div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+const MobileCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const handleNav = (direction) => {
@@ -18,41 +57,8 @@ const Events = () => {
     setCurrentSlide(newSlide);
   };
 
-  useLayoutEffect(() => {
-    let ctx = gsap.context(() => {
-      ScrollTrigger.matchMedia({
-        // Desktop: Original sticky horizontal scroll
-        '(min-width: 768px)': function () {
-          gsap.to(carousel.current, {
-            x: () => -(carousel.current.scrollWidth - window.innerWidth),
-            ease: "none",
-            scrollTrigger: {
-              trigger: component.current,
-              pin: true,
-              scrub: 1,
-              end: () => `+=${carousel.current.scrollWidth - window.innerWidth}`,
-              invalidateOnRefresh: true,
-            },
-          });
-        },
-
-        // Mobile: New card carousel
-        '(max-width: 767px)': function () {
-          const slideWidth = carousel.current.querySelector('.event-card').offsetWidth;
-          gsap.to(carousel.current, {
-            x: -currentSlide * slideWidth,
-            duration: 0.5,
-            ease: 'power2.inOut',
-          });
-        },
-      });
-    }, component);
-    return () => ctx.revert();
-  }, [currentSlide]);
-
   return (
-    <main className="events-section" ref={component}>
-      {/* Mobile-only header */}
+    <main className="events-section">
       <div className="live-events-header-mobile">
         <h1 className="live-events-title-mobile">Live Events</h1>
         <p className="live-events-description-mobile">
@@ -62,37 +68,17 @@ const Events = () => {
 
       <div className="mobile-carousel-container">
         <div className="event-carousel-wrapper">
-          <div className="event-carousel" ref={carousel}>
-            {/* Desktop-only full-screen panel */}
-            <div className="live-events-panel-desktop">
-              <h1 className="live-events-title-desktop">Live Events.</h1>
-              <p className="live-events-description-desktop">Scroll to explore our exciting events.</p>
-            </div>
-
-            {/* Event cards for both mobile and desktop */}
+          <motion.div
+            className="event-carousel"
+            animate={{ x: `-${currentSlide * 100}%` }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
             {eventData.map((event) => (
-              <div key={event.id} className="event-card">
-                <div className="event-card-image"><img src={event.imageUrl} alt={event.title} /></div>
-                <div className="event-card-content">
-                  <p className="live-events-title">{event.title}</p>
-                  <p className="event-card-date">{event.date}</p>
-                  <p className="live-events-description">{event.description}</p>
-                </div>
-                <div className="event-card-buttons">
-                  <button className="details-button">Details</button>
-                  {event.tags.map((tag, idx) => (
-                    <button key={idx} className="tag-button">{tag}</button>
-                  ))}
-                </div>
-              </div>
+              <EventCard key={event.id} event={event} />
             ))}
-
-            {/* Spacer for desktop only */}
-            <div className="event-card-spacer"></div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Mobile-only navigation */}
         <div className="carousel-nav-mobile">
           <button onClick={() => handleNav('prev')} className="nav-arrow prev-arrow">&#8249;</button>
           <button onClick={() => handleNav('next')} className="nav-arrow next-arrow">&#8250;</button>
@@ -101,5 +87,22 @@ const Events = () => {
     </main>
   );
 };
+
+const EventCard = ({ event }) => (
+  <div className="event-card">
+    <div className="event-card-image"><img src={event.imageUrl} alt={event.title} /></div>
+    <div className="event-card-content">
+      <p className="live-events-title">{event.title}</p>
+      <p className="event-card-date">{event.date}</p>
+      <p className="live-events-description">{event.description}</p>
+    </div>
+    <div className="event-card-buttons">
+      <button className="details-button">Details</button>
+      {event.tags.map((tag, idx) => (
+        <button key={idx} className="tag-button">{tag}</button>
+      ))}
+    </div>
+  </div>
+);
 
 export default Events;

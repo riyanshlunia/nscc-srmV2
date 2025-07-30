@@ -1,28 +1,40 @@
-"use client"
-import { useEffect, useRef, useState } from "react"
-import * as THREE from "three"
-import NSCCEvectorImg from "../assets/NSCC EVECTOR.png"
-import nscchero from "../assets/hero.png"
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
+import NSCCEvectorImg from "../assets/NSCC EVECTOR.png";
+import nscchero from "../assets/hero.png";
 
 const ShaderBackground = () => {
-  const mountRef = useRef(null)
-  const animationRef = useRef(null)
+  const mountRef = useRef(null);
+  const animationRef = useRef(null);
 
   useEffect(() => {
-    if (!mountRef.current) return
+    if (!mountRef.current) return;
 
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
       antialias: true,
       preserveDrawingBuffer: true,
       premultipliedAlpha: false,
-    })
+    });
 
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    mountRef.current.appendChild(renderer.domElement)
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.domElement.style.position = "absolute";
+    renderer.domElement.style.top = "0";
+    renderer.domElement.style.left = "0";
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
+    renderer.domElement.style.objectFit = "cover";
+    mountRef.current.appendChild(renderer.domElement);
 
     const material = new THREE.ShaderMaterial({
       fragmentShader: originalFragmentShader,
@@ -37,71 +49,68 @@ const ShaderBackground = () => {
         u_resolution: { value: [window.innerWidth, window.innerHeight] },
       },
       transparent: true,
-    })
+    });
 
-    const geometry = new THREE.PlaneGeometry(1, 1)
-    const mesh = new THREE.Mesh(geometry, material)
-    scene.add(mesh)
-    mesh.position.z = -1
-    camera.position.z = 0
+    const geometry = new THREE.PlaneGeometry(2048, 2048);
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+    camera.position.z = 5;
 
-    const resizePlane = () => {
-      const distance = Math.abs(mesh.position.z - camera.position.z)
-      const fovInRadians = (camera.fov * Math.PI) / 180
-      const height = 2 * Math.tan(fovInRadians / 2) * distance
-      const width = height * camera.aspect
-      mesh.scale.set(width, height, 1)
-    }
-
-    resizePlane()
-
-    const mouse = { x: 0, y: 0 }
-
+    const mouse = { x: 0, y: 0 };
     const handleMouseMove = (event) => {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
-    }
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    };
+    window.addEventListener("mousemove", handleMouseMove);
 
-    window.addEventListener("mousemove", handleMouseMove)
-
-    const clock = new THREE.Clock()
+    const clock = new THREE.Clock();
     const animate = () => {
-      const elapsedTime = clock.getElapsedTime()
-      material.uniforms.u_time.value = elapsedTime
-      material.uniforms.u_mouse.value = [mouse.x / 2 + 0.5, mouse.y / 2 + 0.5]
-      material.uniforms.u_resolution.value = [window.innerWidth, window.innerHeight]
-      renderer.render(scene, camera)
-      animationRef.current = requestAnimationFrame(animate)
-    }
-
-    animate()
+      const elapsedTime = clock.getElapsedTime();
+      material.uniforms.u_time.value = elapsedTime;
+      material.uniforms.u_mouse.value = [mouse.x / 2 + 0.5, mouse.y / 2 + 0.5];
+      material.uniforms.u_resolution.value = [
+        window.innerWidth,
+        window.innerHeight,
+      ];
+      renderer.render(scene, camera);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    animate();
 
     const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight
-      camera.updateProjectionMatrix()
-      renderer.setSize(window.innerWidth, window.innerHeight)
-      material.uniforms.u_resolution.value = [window.innerWidth, window.innerHeight]
-      resizePlane()
-    }
-
-    window.addEventListener("resize", handleResize)
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+      renderer.domElement.style.width = "100%";
+      renderer.domElement.style.height = "100%";
+      material.uniforms.u_resolution.value = [width, height];
+    };
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove)
-      window.removeEventListener("resize", handleResize)
-      if (animationRef.current) cancelAnimationFrame(animationRef.current)
-      if (mountRef.current && renderer.domElement) mountRef.current.removeChild(renderer.domElement)
-      geometry.dispose()
-      material.dispose()
-      renderer.dispose()
-    }
-  }, [])
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("resize", handleResize);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      if (mountRef.current && renderer.domElement)
+        mountRef.current.removeChild(renderer.domElement);
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+    };
+  }, []);
 
-  return <div ref={mountRef} className="absolute inset-0 z-0 opacity-80" />
-}
+  return (
+    <div
+      ref={mountRef}
+      className="absolute inset-0 z-0 opacity-80"
+      style={{ width: "100%", height: "100%", overflow: "hidden" }}
+    />
+  );
+};
 
-// Your original fragment shader
-const originalFragmentShader = `
+const fragmentShader = `
 uniform vec2 u_resolution;
 uniform float u_time;
 uniform vec3 u_color;
@@ -139,53 +148,43 @@ void main() {
   color.g = max(u_background.g,color.g);
   color.b = max(u_background.b,color.b);
   gl_FragColor = color;
-}
-`
+}`;
 
 // Your original vertex shader
 const originalVertexShader = `
 void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`
+}`;
 
 export default function Hero() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const heroRef = useRef(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const heroRef = useRef(null);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
-
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      })
-    }
-    // Close mobile menu if open
-    setIsMenuOpen(false)
-  }
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isMenuOpen && !event.target.closest(".mobile-menu-container")) {
-        setIsMenuOpen(false)
+        setIsMenuOpen(false);
       }
-    }
-    document.addEventListener("click", handleClickOutside)
-    return () => document.removeEventListener("click", handleClickOutside)
-  }, [isMenuOpen])
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isMenuOpen]);
 
   useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? "hidden" : "unset"
+    document.body.style.overflow = isMenuOpen ? "hidden" : "unset";
     return () => {
-      document.body.style.overflow = "unset"
-    }
-  }, [isMenuOpen])
+      document.body.style.overflow = "unset";
+    };
+  }, [isMenuOpen]);
 
   return (
-    <div ref={heroRef} className="relative min-h-screen bg-[#0a192f] overflow-x-hidden">
+    <div
+      ref={heroRef}
+      className="relative min-h-screen bg-[#0a192f] overflow-hidden"
+      style={{ minHeight: "100vh" }}
+    >
       <ShaderBackground />
 
       {/* Grid Lines - Limited to hero section only */}
@@ -203,21 +202,25 @@ export default function Hero() {
       {/* Navigation */}
       <nav className="relative z-10 bg-transparent text-white p-4 flex items-center justify-between max-w-full">
         <div className="text-2xl font-bold px-2 md:px-6 flex-shrink-0">
-          <img src={NSCCEvectorImg} alt="NSCC Evector" className="h-8 md:h-10 w-auto" />
+          <img
+            src={NSCCEvectorImg}
+            alt="NSCC Evector"
+            className="h-8 md:h-10 w-auto"
+          />
         </div>
 
         {/* Desktop Navigation */}
         <ul className="hidden lg:flex w-full justify-between px-4 xl:px-20 max-w-4xl">
-          {[
-            { name: "Domains", id: "domains" },
-            { name: "Live Events", id: "events" },
-            { name: "Our Team", id: "team" },
-            { name: "Contact", id: "contact" },
-          ].map((item) => (
-            <li key={item.name} className={`px-2 xl:px-4 py-4 ${item.name === "Contact" ? "bg-blue-800 rounded" : ""}`}>
-              <button
-                onClick={() => scrollToSection(item.id)}
-                className="relative after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-white after:transition-all after:duration-300 hover:after:w-full font-helvetica-neue text-sm xl:text-base cursor-pointer"
+          {["Domains", "Live Events", "Our Team", "Contact"].map((item) => (
+            <li
+              key={item}
+              className={`px-2 xl:px-4 py-4 ${
+                item === "Contact" ? "bg-blue-800 rounded" : ""
+              }`}
+            >
+              <a
+                href="#"
+                className="relative after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-white after:transition-all after:duration-300 hover:after:w-full font-helvetica-neue text-sm xl:text-base"
               >
                 {item.name}
               </button>
@@ -234,13 +237,19 @@ export default function Hero() {
           >
             <div className="w-5 h-4 flex flex-col justify-center items-center">
               <span
-                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "rotate-45 translate-y-0.5" : "mb-1"}`}
+                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
+                  isMenuOpen ? "rotate-45 translate-y-0.5" : "mb-1"
+                }`}
               ></span>
               <span
-                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "opacity-0 scale-0" : ""}`}
+                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
+                  isMenuOpen ? "opacity-0 scale-0" : ""
+                }`}
               ></span>
               <span
-                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? "-rotate-45 -translate-y-0.5" : "mt-1"}`}
+                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
+                  isMenuOpen ? "-rotate-45 -translate-y-0.5" : "mt-1"
+                }`}
               ></span>
             </div>
           </button>
@@ -249,16 +258,24 @@ export default function Hero() {
 
       {/* Modern Mobile Menu Overlay */}
       <div
-        className={`mobile-menu-container lg:hidden fixed inset-0 z-50 transition-all duration-500 ease-out ${isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"}`}
+        className={`mobile-menu-container lg:hidden fixed inset-0 z-50 transition-all duration-500 ease-out ${
+          isMenuOpen
+            ? "opacity-100 visible"
+            : "opacity-0 invisible pointer-events-none"
+        }`}
       >
         {/* Backdrop */}
         <div
-          className={`absolute inset-0 bg-[#0a192f]/100 transition-opacity duration-500 ${isMenuOpen ? "opacity-80" : "opacity-0"}`}
+          className={`absolute inset-0 bg-[#0a192f]/100  transition-opacity duration-500 ${
+            isMenuOpen ? "opacity-100" : "opacity-0"
+          }`}
         ></div>
 
         {/* Menu Content */}
         <div
-          className={`relative h-full flex flex-col transition-all duration-500 transform ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+          className={`relative h-full flex flex-col transition-all duration-500 transform ${
+            isMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
         >
           {/* Header with Close Button */}
           <div className="flex justify-between items-center p-6 border-b border-white/10">
@@ -268,37 +285,51 @@ export default function Hero() {
               className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 transition-all duration-300"
               aria-label="Close menu"
             >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
 
-          {/* Menu Items - Moved to Top */}
-          <div className="flex flex-col items-center px-6 pt-12">
-            <ul className="space-y-6 w-full max-w-xs">
-              {[
-                { name: "Domains", id: "domains" },
-                { name: "Live Events", id: "events" },
-                { name: "Our Team", id: "team" },
-                { name: "Contact", id: "contact" },
-              ].map((item, index) => (
-                <li
-                  key={item.name}
-                  className={`transform transition-all duration-500 delay-${index * 100} ${isMenuOpen ? "translate-x-0 opacity-100" : "translate-x-8 opacity-0"} text-center`}
-                >
-                  <button
-                    onClick={() => scrollToSection(item.id)}
-                    className={`block text-2xl font-medium transition-all duration-300 hover:scale-105 w-full text-center ${
-                      item.name === "Contact"
-                        ? "text-white bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow-lg"
-                        : "text-white/90 hover:text-white border-b border-transparent hover:border-white/30 pb-2"
+          {/* Menu Items */}
+          <div className="flex-1 flex flex-col justify-center px-6">
+            <ul className="space-y-6">
+              {["Domains", "Live Events", "Our Team", "Contact"].map(
+                (item, index) => (
+                  <li
+                    key={item}
+                    className={`transform transition-all duration-500 delay-${
+                      index * 100
+                    } ${
+                      isMenuOpen
+                        ? "translate-x-0 opacity-100"
+                        : "translate-x-8 opacity-0"
                     }`}
                   >
-                    {item.name}
-                  </button>
-                </li>
-              ))}
+                    <a
+                      href="#"
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`block text-2xl font-medium transition-all duration-300 hover:translate-x-2 ${
+                        item === "Contact"
+                          ? "text-white bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow-lg"
+                          : "text-white/90 hover:text-white border-b border-transparent hover:border-white/30 pb-2"
+                      }`}
+                    >
+                      {item}
+                    </a>
+                  </li>
+                )
+              )}
             </ul>
           </div>
 
@@ -307,7 +338,9 @@ export default function Hero() {
 
           {/* Footer */}
           <div className="p-6 border-t border-white/10">
-            <p className="text-white/60 text-sm text-center">© 2024 NSCC. All rights reserved.</p>
+            <p className="text-white/60 text-sm text-center">
+              © 2024 NSCC. All rights reserved.
+            </p>
           </div>
         </div>
       </div>
@@ -326,21 +359,23 @@ export default function Hero() {
         {/* Positioned Lorem Ipsum Section - Desktop */}
         <div className="absolute left-[25.6%] w-[24%] top-[75%] text-left hidden xl:block">
           <p className="text-base text-gray-300 leading-relaxed font-helvetica-neue">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-            ea commodo consequat.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat.
           </p>
         </div>
 
         {/* Mobile/Tablet version of Lorem Ipsum */}
         <div className="xl:hidden w-full max-w-md mx-auto mt-4 px-4">
           <p className="text-sm md:text-base text-gray-300 leading-relaxed font-helvetica-neue text-center">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-            ea commodo consequat.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat.
           </p>
         </div>
       </section>
     </div>
-  )
+  );
 }
