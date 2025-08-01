@@ -37,8 +37,8 @@ const ShaderBackground = () => {
     mountRef.current.appendChild(renderer.domElement);
 
     const material = new THREE.ShaderMaterial({
-      fragmentShader,
-      vertexShader,
+      fragmentShader: fragmentShader,
+      vertexShader: vertexShader,
       uniforms: {
         u_color: { value: [0.3137254901960784, 0, 1] },
         u_background: { value: [0.039, 0.098, 0.184, 1] },
@@ -150,6 +150,7 @@ void main() {
   gl_FragColor = color;
 }`;
 
+// Vertex shader
 const vertexShader = `
 void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -192,7 +193,6 @@ export default function Hero() {
         <div className="absolute top-0 left-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
         <div className="absolute top-0 left-1/2 w-[1px] h-full bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
         <div className="absolute top-0 left-3/4 w-[1px] h-full bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
-
         {/* Horizontal Lines */}
         <div className="absolute top-1/4 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
         <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
@@ -332,6 +332,9 @@ export default function Hero() {
               )}
             </ul>
           </div>
+
+          {/* Spacer to push footer to bottom */}
+          <div className="flex-1"></div>
 
           {/* Footer */}
           <div className="p-6 border-t border-white/10">

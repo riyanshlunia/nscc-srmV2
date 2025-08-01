@@ -1,10 +1,11 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 import BackgroundImage from "../assets/img/teams/bg.png";
 import TextureImage from "../assets/img/teams/texture.png";
 import teamData from "../assets/data/2025-26.js";
+import NSCCVector from "../assets/NSCC EVECTOR.png";
 
 import githubIcon from "../assets/img/teams/social-icons/github.png";
 import twitterIcon from "../assets/img/teams/social-icons/twitter.png";
@@ -22,59 +23,159 @@ const socialIconMap = {
 
 const OurTeam = ({ teamData: propTeamData }) => {
   const scrollRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: scrollRef });
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-83.33%"]); // 6 pages, so we scroll 5/6 = 83.33%
+  const { scrollYProgress } = useScroll({
+    target: scrollRef,
+  });
 
+  const dataToUse = useMemo(() => propTeamData || teamData, [propTeamData]);
+  const totalSections = useMemo(
+    () => Object.keys(dataToUse).length + 1,
+    [dataToUse]
+  );
+
+  // Calculate the correct scroll percentage based on actual sections
+  const scrollPercentage = useMemo(() => {
+    // For n sections, we need to move (n-1) sections to the left
+    // Each section is 100vw, so total movement is (n-1) * 100vw
+    const moveDistance = (totalSections - 1) * 100;
+    return `-${moveDistance}vw`;
+  }, [totalSections]);
+
+  const x = useTransform(scrollYProgress, [0, 1], ["0vw", scrollPercentage]);
   const [visibleSections, setVisibleSections] = useState(new Set());
 
-  const dataToUse = propTeamData || teamData;
+  // Memoized screen size check
+  const { isMobile, isTablet } = useMemo(() => {
+    if (typeof window === "undefined")
+      return { isMobile: false, isTablet: false };
+    const width = window.innerWidth;
+    return {
+      isMobile: width < 768,
+      isTablet: width >= 768 && width < 1024,
+    };
+  }, []);
 
-  // Calculate which sections are fully visible
-  useEffect(() => {
-    const unsubscribe = scrollYProgress.on("change", (latest) => {
-      const totalSections = Object.keys(dataToUse).length + 1; // +1 for intro page
-      const currentPosition = latest * (totalSections - 1);
+  // Memoized needsScrolling function
+  const needsScrolling = useCallback(
+    (memberCount) => {
+      if (isMobile) return memberCount > 4;
+      if (isTablet) return memberCount > 6;
+      return memberCount > 9;
+    },
+    [isMobile, isTablet]
+  );
 
-      const newVisibleSections = new Set();
+  // Component for handling image with fallback
+  const MemberImage = ({ member }) => {
+    const [imageSrc, setImageSrc] = useState(`/teams/${member.name}.jpg`);
+    const [imageError, setImageError] = useState(false);
 
-      // Check each section (0 is intro, 1+ are team sections)
-      for (let i = 0; i < totalSections; i++) {
-        const sectionCenter = i;
-
-        // Calculate how close the current position is to the section center
-        const distanceFromCenter = Math.abs(currentPosition - sectionCenter);
-
-        // Section is considered fully visible when we're very close to its center
-        // Using a threshold of 0.1 means the section must be at least 90% in view
-        if (distanceFromCenter <= 0.1) {
-          newVisibleSections.add(i);
-        }
+    const handleImageError = () => {
+      if (!imageError) {
+        setImageError(true);
+        setImageSrc(NSCCVector);
       }
+    };
 
-      setVisibleSections(newVisibleSections);
+    return (
+      <img
+        className="absolute left-0 top-1/2 transform -translate-y-1/2 w-[100px] h-[100px] sm:w-[112px] sm:h-[112px] xl:w-[144px] xl:h-[144px] rounded-full object-cover border-0 shadow-lg z-10"
+        src={imageSrc}
+        alt={member.name}
+        loading="lazy"
+        onError={handleImageError}
+      />
+    );
+  };
+
+  // Calculate which sections are fully visible with throttling
+  useEffect(() => {
+    let timeoutId;
+
+    const unsubscribe = scrollYProgress.on("change", (latest) => {
+      if (timeoutId) clearTimeout(timeoutId);
+
+      timeoutId = setTimeout(() => {
+        const currentPosition = latest * (totalSections - 1);
+        const newVisibleSections = new Set();
+
+        // Check each section (0 is intro, 1+ are team sections)
+        for (let i = 0; i < totalSections; i++) {
+          const distanceFromCenter = Math.abs(currentPosition - i);
+          if (distanceFromCenter <= 0.1) {
+            newVisibleSections.add(i);
+          }
+        }
+
+        setVisibleSections(newVisibleSections);
+      }, 16); // ~60fps throttling
     });
 
-    return unsubscribe;
-  }, [scrollYProgress, dataToUse]);
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      unsubscribe();
+    };
+  }, [scrollYProgress, totalSections]);
 
-  const needsScrolling = (memberCount) => {
-    const isMobile = window.innerWidth < 768;
-    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+  // Memoized MemberCard component to prevent unnecessary re-renders
+  const MemberCard = useCallback(
+    ({ member }) => (
+      <div className="w-[400px] md:w-[350px] xl:w-[400px] max-w-[90vw] relative flex items-center transition-transform duration-300 hover:scale-105">
+        {/* Card background - no left border, rectangular shape */}
+        <div className="w-full h-[100px] sm:h-[112px] xl:h-[144px] bg-gray-800/95 rounded-r-[25px] sm:rounded-r-[50px] border-t border-r border-b border-white backdrop-blur-sm shadow-lg ml-[50px] sm:ml-[56px] xl:ml-[72px]">
+          {/* Content inside the card */}
+          <div className="flex flex-col justify-center h-full pl-[50px] sm:pl-[60px] xl:pl-[90px] pr-3 sm:pr-4 xl:pr-6">
+            <h3 className="text-white text-sm sm:text-base xl:text-xl font-normal font-helvetica mb-1 line-clamp-2 sm:line-clamp-1">
+              {member.name}
+            </h3>
+            <p className="text-white text-xs sm:text-sm xl:text-lg font-extralight font-helvetica mb-2 sm:mb-3 line-clamp-2 sm:line-clamp-1">
+              {member.designation}
+            </p>
 
-    if (isMobile) {
-      return memberCount > 4;
-    } else if (isTablet) {
-      return memberCount > 6;
-    } else {
-      return memberCount > 9;
-    }
-  };
+            <div className="flex gap-1 sm:gap-2 flex-wrap">
+              {member.social
+                .filter(
+                  (socialItem) => socialItem.url && socialItem.url.trim() !== ""
+                )
+                .slice(0, 4)
+                .map((socialItem, socialIndex) => {
+                  const iconSrc = socialIconMap[socialItem.name.toLowerCase()];
+                  if (!iconSrc) return null;
+
+                  return (
+                    <a
+                      key={socialIndex}
+                      href={socialItem.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-6 h-6 sm:w-8 sm:h-8 xl:w-10 xl:h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#64b5f6] transition-all duration-300 hover:scale-110 border border-white/20"
+                      title={socialItem.name}
+                    >
+                      <img
+                        src={iconSrc}
+                        alt={socialItem.name}
+                        className="w-4 h-4 sm:w-6 sm:h-6 xl:w-8 xl:h-8 object-contain filter brightness-0 invert hover:brightness-100 hover:invert-0 transition-all duration-300"
+                      />
+                    </a>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+
+        {/* Circular image positioned absolutely to overflow from the left side */}
+        <MemberImage member={member} />
+      </div>
+    ),
+    []
+  );
 
   return (
     <section
       id="our-team-section"
       ref={scrollRef}
-      className="relative h-[600vh]"
+      className="relative"
+      style={{ height: `${totalSections * 100}vh` }}
     >
       <div className="sticky top-0 h-screen flex items-center overflow-hidden">
         <div
@@ -100,7 +201,9 @@ const OurTeam = ({ teamData: propTeamData }) => {
           className="flex h-full relative z-10"
           style={{
             x,
-            width: `${(Object.keys(dataToUse).length + 1) * 100}vw`,
+            width: `${totalSections * 100}vw`,
+            willChange: "transform",
+            transform: "translateZ(0)", // Force GPU acceleration
           }}
         >
           {/* Custom First Page */}
@@ -125,18 +228,30 @@ const OurTeam = ({ teamData: propTeamData }) => {
             const section = dataToUse[sectionKey][0];
             const sectionNumber = sectionIndex + 1; // +1 because intro is section 0
             const isFullyVisible = visibleSections.has(sectionNumber);
+            const memberCount = section.members.length;
+            const requiresScrolling = needsScrolling(memberCount);
+
+            // Memoize grid class calculation
+            const gridClasses = useMemo(() => {
+              if (memberCount === 1) return "grid-cols-1";
+              if (memberCount === 2) return "grid-cols-1 xl:grid-cols-2";
+              if (memberCount <= 4) return "grid-cols-1 md:grid-cols-2";
+              if (memberCount <= 6)
+                return "grid-cols-1 md:grid-cols-2 xl:grid-cols-3";
+              return "grid-cols-1 md:grid-cols-2 xl:grid-cols-3";
+            }, [memberCount]);
 
             return (
               <div
                 key={sectionIndex}
                 className="w-dvw h-dvh relative px-4 sm:px-8"
               >
-                <h1 className="absolute top-18 sm:top-6 md:top-8 left-1/2 transform -translate-x-1/2 text-3xl sm:text-4xl md:text-6xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20 mb-10">
+                <h1 className="absolute top-18 sm:top-6 md:top-8 left-1/2 transform -translate-x-1/2 text-3xl sm:text-4xl md:text-6xl lg:text-[120px] text-[#FFFFFF] font-normal font-helvetica text-center mix-blend-overlay leading-tight tracking-tight backdrop-blur-[20px] opacity-100 bg-clip-text z-20 mb-10 mt-5">
                   {section.category}.
                 </h1>
 
                 <div className="absolute top-24 sm:top-24 md:top-32 lg:top-40 left-1/2 transform -translate-x-1/2 w-full max-w-7xl px-4 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-180px)] lg:h-[calc(100vh-200px)]">
-                  {needsScrolling(section.members.length) ? (
+                  {requiresScrolling ? (
                     <div
                       className={`h-full transition-all duration-300 ${
                         isFullyVisible
@@ -148,32 +263,25 @@ const OurTeam = ({ teamData: propTeamData }) => {
                         scrollbarColor: "rgba(255, 255, 255, 0.2) transparent",
                       }}
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center place-items-center pb-8 pr-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 xl:gap-6 justify-items-center place-items-center pb-8 pr-4 md:px-8 xl:px-4">
                         {section.members.map((member, memberIndex) => (
-                          <MemberCard key={memberIndex} member={member} />
+                          <MemberCard
+                            key={`${member.name}-${memberIndex}`}
+                            member={member}
+                          />
                         ))}
                       </div>
                     </div>
                   ) : (
                     <div className="h-full flex items-center justify-center">
                       <div
-                        className={`
-                        grid gap-6 justify-items-center place-items-center
-                        ${
-                          section.members.length === 1
-                            ? "grid-cols-1"
-                            : section.members.length === 2
-                            ? "grid-cols-1 lg:grid-cols-2"
-                            : section.members.length <= 4
-                            ? "grid-cols-1 md:grid-cols-2"
-                            : section.members.length <= 6
-                            ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-                            : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"
-                        }
-                      `}
+                        className={`grid gap-6 md:gap-8 xl:gap-6 justify-items-center place-items-center md:px-8 xl:px-4 ${gridClasses}`}
                       >
                         {section.members.map((member, memberIndex) => (
-                          <MemberCard key={memberIndex} member={member} />
+                          <MemberCard
+                            key={`${member.name}-${memberIndex}`}
+                            member={member}
+                          />
                         ))}
                       </div>
                     </div>
@@ -187,56 +295,5 @@ const OurTeam = ({ teamData: propTeamData }) => {
     </section>
   );
 };
-
-const MemberCard = ({ member }) => (
-  <div className="w-[400px] max-w-[90vw] flex items-center bg-gray-800/95 rounded-tl-[50px] rounded-tr-[25px] rounded-bl-[50px] rounded-br-[25px] sm:rounded-tl-[100px] sm:rounded-tr-[50px] sm:rounded-bl-[100px] sm:rounded-br-[50px] border border-white backdrop-blur-sm transition-transform duration-300 hover:scale-105 shadow-lg">
-    <div className="flex-shrink-0">
-      <img
-        className="w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36 rounded-full object-cover bg-blend-luminosity"
-        src={`/teams/${member.name}.jpg`}
-        alt={member.name}
-        loading="lazy"
-      />
-    </div>
-
-    <div className="flex-1 ml-3 sm:ml-6 mr-2 sm:mr-4 py-2 sm:py-4 min-h-[100px] sm:min-h-[140px] flex flex-col justify-center">
-      <h3 className="text-white text-sm sm:text-lg lg:text-xl font-normal font-helvetica mb-1 line-clamp-2 sm:line-clamp-1">
-        {member.name}
-      </h3>
-      <p className="text-white text-xs sm:text-base lg:text-lg font-extralight font-helvetica mb-2 sm:mb-3 line-clamp-2 sm:line-clamp-1">
-        {member.designation}
-      </p>
-
-      <div className="flex gap-1 sm:gap-2 flex-wrap">
-        {member.social
-          .filter(
-            (socialItem) => socialItem.url && socialItem.url.trim() !== ""
-          )
-          .slice(0, 4)
-          .map((socialItem, socialIndex) => {
-            const iconSrc = socialIconMap[socialItem.name.toLowerCase()];
-            if (!iconSrc) return null;
-
-            return (
-              <a
-                key={socialIndex}
-                href={socialItem.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#64b5f6] transition-all duration-300 hover:scale-110 border border-white/20"
-                title={socialItem.name}
-              >
-                <img
-                  src={iconSrc}
-                  alt={socialItem.name}
-                  className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 object-contain filter brightness-0 invert hover:brightness-100 hover:invert-0 transition-all duration-300"
-                />
-              </a>
-            );
-          })}
-      </div>
-    </div>
-  </div>
-);
 
 export default OurTeam;
