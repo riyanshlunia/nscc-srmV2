@@ -3,8 +3,6 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
 
-import BackgroundImage from "../assets/img/teams/bg.png";
-import TextureImage from "../assets/img/teams/texture.png";
 import teamData from "../assets/data/2025-26.js";
 
 import githubIcon from "../assets/img/teams/social-icons/github.png";
@@ -97,13 +95,13 @@ const OurTeam = ({ teamData: propTeamData }) => {
   return (
     <div className="w-full h-dvh overflow-hidden relative" ref={containerRef}>
       <div
-        className="absolute inset-0 bg-cover bg-no-repeat bg-center"
-        style={{ backgroundImage: `url(${BackgroundImage})` }}
+        className="absolute inset-0"
+        
       />
 
       <div
-        className="absolute inset-0 bg-repeat opacity-50"
-        style={{ backgroundImage: `url(${TextureImage})` }}
+        className="absolute inset-0 opacity-50"
+        
       />
 
       {/* Grid backgound verti/horizontal lines overlay */}
@@ -256,3 +254,4 @@ const MemberCard = ({ member }) => (
 );
 
 export default OurTeam;
+
