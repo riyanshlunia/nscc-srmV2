@@ -9,12 +9,11 @@ export default function AboutUs() {
         <div className="text-3xl md:w- lg:w-[950px]">
           <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores, reprehenderit doloribus laborum eveniet, vel et minima deleniti nihil voluptatibus velit magni voluptatem neque similique dignissimos atque nisi! Aperiam, officia quod!</p>
         </div>
-        <div className="flex flex-col lg:h-92 md:w-96 lg:w-[450px] p-9 rounded-3xl space-y-10 lg:float-right border border-white" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+        <div className="flex flex-col lg:h-92 md:w-96 lg:w-[450px] p-9 rounded-3xl space-y-10 lg:float-right border border-white" >
           <p className='text-justify'>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Aperiam quis animi eaque, soluta perferendis velit veritatis consequuntur, voluptate saepe sed alias est! Qui rem maiores nulla labore perferendis consectetur ut? Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi, quis nobis veritatis corrupti.</p>
           <div className="h-0.5 bg-white"></div>
           <div
             style={{
-              backgroundColor: '#D9D9D9',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -24,7 +23,7 @@ export default function AboutUs() {
             <p className="text-black text-md ml-4">Our Team</p>
             <button
               className="ml-2 p-5 transition rounded-full"
-              style={{ backgroundColor: '#31C4BF' }}
+              
             >
               <FontAwesomeIcon icon={faArrowRight} className="text-black text-2xl" />
             </button>
@@ -58,4 +57,5 @@ export default function AboutUs() {
     </>
   );
 }
+
 
